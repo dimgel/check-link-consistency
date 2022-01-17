@@ -1,0 +1,37 @@
+# Absolute directory paths to search RECURSIVELY for binaries and libraries, in addition to defaults.
+# Space-separated, may be specified multiple times. Missing directories will be silently ignored.
+# Defaults are defined in src/defaults_Arch.hpp.
+#
+# Libraries found in scanMoreLibs directories (but NOT in their subdirectories) will participate in resolution
+# like if they were appended to LD_LIBRARY_PATH. Order of directories is important: it's search priority.
+#
+#scanMoreBins=/usr/local/bin /root/bin /home/me/bin
+#scanMoreLibs=/usr/local/lib /root/lib /home/me/lib
+
+
+# Syntax: addOptDepend={packageName} {optDependPackageName}
+# Here you can specify package optional dependencies maintainers forgot about.
+# E.g. on my system file `/usr/lib/python3.10/site-packages/PyQt5/QtSensors.abi3.so` had unresolved needed lib `libQt5Sensors.so.5`
+# because package `python-pyqt5 5.15.6-6` optional dependencies did not include `qt5-sensors`.
+#
+# NOTE: libgnome-keyring is deprecated, but git depends on it anyway.
+addOptDepend=git libgnome-keyring
+addOptDepend=python-pyqt5 qt5-sensors
+addOptDepend=qt5-speech libspeechd
+addOptDepend=wine lib32-gstreamer
+
+
+# Syntax: addLibPath={package|/abs/file/path|/abs/directory/path/**} {/abs/directory/path}
+# Adds specified directory as library search path for {all files in package | specific file | all flies in directory and its subdirectories}.
+# Directory is added with highest priority (before RPATH), because package-specific libs may override system ones.
+# Applies to optional dependencies too: e.g. I don't have `java-runtime` installed, but script resolves `libjawt.so` for `libreoffice-fresh`.
+#
+addLibPath=firefox /usr/lib/firefox
+addLibPath=graphviz /usr/lib/R/lib
+addLibPath=libreoffice-fresh /usr/lib/jvm/java-17-openjdk/lib
+addLibPath=postgresql /usr/lib/perl5/5.34/core_perl/CORE
+addLibPath=qtcreator /usr/lib/qtcreator
+addLibPath=smbclient /usr/lib/samba
+addLibPath=thunderbird-artix /usr/lib/thunderbird
+addLibPath=wine /usr/lib/wine/x86_64-unix
+addLibPath=wine /usr/lib32/wine/i386-unix

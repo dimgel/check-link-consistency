@@ -1,0 +1,22 @@
+Source file extensions:
+	*.h + *.cpp   -- normal header + source
+	*.hpp         -- part of source file conditionally #included into .cpp.
+
+Indents:
+	Tabs, not spaces. My tab size = 4.
+
+Right margin:
+	At the moment (1920x1080, QtCreator without right panel) ~190.
+
+Identifiers:
+	CamelCase for types and constants, lowCamelCase for everything else. Generally.
+
+	Names ending with '_' usually denote something to be std::move()-d, be careful.
+
+	Names containing '_' either identify something internal to their prefix (e.g. someFunc_Params means someFunc()'s parameter object),
+	or maybe I just wanted visual grouping for faster eye-catching in IDE's Outline view.
+
+	Name `path0` denotes result of realpath(3), e.g. "/usr/bin/su"; path1 == path0 + 1 (i.e. without leading slash, e.g. "usr/bin/su");
+	it's to speed up Resolver checks collected paths against /var/lib/pacman/local/*/files entries which are realpaths without leading slash
+	(see sources-pacman.txt).
+	Exception is ldCache (parsed output of `ldconfig -p`): when working with it, `path1` is .so name without path (that deduplicates code in several places).

@@ -1,0 +1,38 @@
+https://archlinux.org/pacman/
+	$ git clone https://gitlab.archlinux.org/pacman/pacman.git
+		got commit id = d21fb58da30a2bed405f9662e5ded3c31dddeccd
+		to return to it:
+	$ git reset --hard d21fb58da30a2bed405f9662e5ded3c31dddeccd
+
+
+Q: Do /var/lib/pacman/local/*/files contain realpaths (without leading '/')?
+A: Yes.
+
+	src/pacman/pacman.c:1087            main()
+		:1245                               switch(config->op) {   <--- -Q / -S / ...
+	src/pacman/query.c:403              pacman_query()
+		:138                            query_fileowner()
+		:213                                ---> alpm_filelist_contains(); called with (realpath + rootlen) where root=='/' (checked it by calling `pacman -Qov {some_file}`).
+	lib/libalpm/filelist.c:121          alpm_filelist_contains()   ---> just calls bsearch(), so I suppose packages' filelists contain realpaths already (without root prefix).
+	lib/libalpm/package.c:407           alpm_pkg_get_files()    ---> can delegate to both _pkg_get_files(), _cache_get_files() (?)
+		:99                                 _pkg_get_files()    ---> returns alpm_pkg_t->files
+	lib/libalpm/be_local.c:186              _cache_get_files()  ---> returns alpm_pkg_t->files
+	lib/libalpm/package.h:88            struct _alpm_pkg_t
+		:126                                alpm_filelist_t files;
+	lib/libalpm/alpm.h:136:             struct _alpm_filelist_t    ---> { size_t count; alpm_file_t *files; }
+		:126                            struct _alpm_file_t
+	lib/libalpm/be_sync.c:532           sync_db_read()    ---> reads one package file (desc, files or depends); parses section %NAMES% agnostic to file name.
+		:576                                ---> no error if no empty line between %SECIONS% (?)
+		:639                                ---> reads %FILES%; does NOT call any sort of realpath(); so these are assumed to be realpaths already.
+		:650                                ---> empty line is end of %FILES% list.
+	lib/libalpm/util.c:20522              _alpm_strip_newline()  ---> no error if no newline.
+
+
+Q: Does pacman run `ldconfig` itself? Not found any hooks mentioning "ldconfig".
+A: Yes. From /var/log/pacman.log and /etc/ld.so.cache mtime: right the moment when it prints "tranaction completed", before running hooks.
+
+	lib/libalpm/util.c:786    _alpm_ldconfig()  -- runs `ldconfig` without arguments, in chroot.
+
+	// Why in chroot? And what that chroot is, if `ldconfig` must access both /lib and /etc, so actually it must access root?
+	// And why `ldconfig` does not print to stderr when run by pacman?
+	// On the other hand, who cares?

@@ -1,0 +1,30 @@
+Behaviour
+=========
+
+I collect bins & libs from filesystem (like Gentoo's revdep-rebuild does), not from locally installed packages:
+users might have installed custom stuff into both /usr/local/* and their homes (which can be added to search via config file).
+
+I only reports errors, without reinstalling broken packages.
+Unlike Gentoo, here we cannot rebuild broken package. And just automatic reinstall feels inappropriate; even `pacman -Qkk` does not do it.
+
+For secure-execution, `ld.so(8)` does not take `LD_LIBRARY_PATH` into account. At the moment:
+* SUID/SGID binaries are detected as secure, but nothing else (particularly, I don't analyze file caps).
+* All libraries are analyzed as non-secure, even those which might be linked to secure binaries.
+
+If DT_RPATH/DT_RUNPATH/DT_NEEDED/LD_LIBRARY_PATH component is relative path but not "$ORIGIN/..." (e.g. "./lib"), I warn and ignore:
+it's relative to current working directory which I don't know.
+
+All debug output is unsorted:
+1. Files are processed in parallel, so their output order is unpredictable anyway.
+2. To extract specific information from debug log, use: `check-link-consistency -vv | grep 'whatever you need' | sort`.
+
+Unlike `revdep-rebuild`, I don't analyze `.la` files. No idea what are they, but looks like irrelevant to loading/running applications.
+
+
+Coding
+======
+
+Speed over memory. I allocate many things to "arena" i.e. without deallocating them:
+particularly, File & Package instances, and most of the strings which are then passed around as std::string_view.
+Actually as dimgel::alloc::String wrapper, to make sure I don't use std::string_view which points to deleted strings.
+So std::string_view are used as temporary references to temporary strings only, often instead of (const std::string&).
