@@ -205,12 +205,13 @@ int main(int argc, char* argv[]) {
 
 			// Read config file.
 			{
-				auto readConfig = [&](const std::string& path) -> bool {
+				auto readConfig = [&](const std::string& path, bool isLocal) -> bool {
 					if (!fs::exists(path)) {
 						return false;
 					}
-					if (ctx_verbosity >= Verbosity_Default) {
-						ctx_log.info("Reading config file: `%s`...", ConstCharPtr{path.c_str()});
+					if (ctx_verbosity >= (isLocal ? Verbosity_VeryImportantWarn : Verbosity_Debug)) {
+						Log::F f = isLocal ? &Log::warn : &Log::debug;
+						(ctx_log.*f)("Reading config file: `%s`...", ConstCharPtr{path.c_str()});
 					}
 					auto contents = util::readFile(path.c_str());
 					std::regex rAddLib{"^\\s*(\\S+)\\s+(\\S+)\\s*$"};
@@ -355,12 +356,12 @@ int main(int argc, char* argv[]) {
 					return true;
 				};   // readConfig()
 
-				// Local config takes priority; e.g. to run from {projectRoot}/target.
-				if (!readConfig(std::string(argv[0]) + ".conf") &&
-					!readConfig("/usr/local/etc/" + (std::string)fs::path(argv[0]).filename() + ".conf") &&
+				// To debug-run from project's `target` directory (i.e. without installation), trying next-to-binary *.conf.sample first.
+				if (!readConfig(std::string(argv[0]) + ".conf.sample", true) &&
+					!readConfig("/etc/" + (std::string)fs::path(argv[0]).filename() + ".conf", false) &&
 					ctx_verbosity >= Verbosity_VeryImportantWarn
 				) {
-					ctx_log.warn("Config file not found, using defaults.");
+					ctx_log.warn("Config file not found. Please copy /usr/share/check-link-consistency/*.conf.sample to /etc/*.conf and edit.");
 				}
 			}
 

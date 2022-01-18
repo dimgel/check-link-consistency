@@ -3,7 +3,7 @@ LICENSE.txt
 README.md
 build.sh
 clean.sh
-makefile
+Makefile
 notes/code-style.txt
 notes/decisions.txt
 notes/sources-pacman.txt

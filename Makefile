@@ -1,7 +1,10 @@
 APP_NAME := check-link-consistency
 DISTRO := Arch
 
-CC := c++ -march=x86-64 -O2 -flto=$(if $(NPROC),$(NPROC),1) -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=return-type -DDISTRO=$(DISTRO)
+PREFIX=/usr
+DESTDIR=
+
+CC := c++ -march=x86-64 -O2 -flto=$(if $(NPROC),$(NPROC),1) -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
 
 MAIN_CPPs := $(shell find src/main/ -type f -name '*.cpp')
 MAIN_Ds := $(MAIN_CPPs:src/%.cpp=target/build/main/%.d)
@@ -103,8 +106,8 @@ $(TEST_PATH).timestamp: $(TEST_PATH)
 
 .PHONY: install
 install:
-	cp target/$(APP_NAME) /usr/local/bin/
-	cp target/$(APP_NAME).conf.sample /usr/local/etc/
+	install -Dm755 target/$(APP_NAME) -t $(DESTDIR)$(PREFIX)/bin/
+	install -Dm644 target/$(APP_NAME).conf.sample -t $(DESTDIR)$(PREFIX)/share/$(APP_NAME)
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------

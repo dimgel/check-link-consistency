@@ -1,3 +1,5 @@
+# This is my (developer's) actual config for ArtixLinux.
+
 # Absolute directory paths to search RECURSIVELY for binaries and libraries, in addition to defaults.
 # Space-separated, may be specified multiple times. Missing directories will be silently ignored.
 # Defaults are defined in src/defaults_Arch.hpp.

@@ -10,11 +10,9 @@ It does as it sounds, and much better than [`findbrokenpkgs`](https://aur.archli
 
 ## Install
 
-1. Clone or download sources, run `make && sudo make install`. Binary will go to `/usr/local/bin`, sample config -- to `/usr/local/etc`.
+1. Clone or download sources, run `make && sudo make install`. Binary will go to `/usr/bin/`, sample config -- to `/usr/share/check-link-consistency/`.
 
-2. Copy/rename `check-link-consistency.conf.sample` to `check-link-consistency.conf` and edit.
-
-**NOTE:** Config file is first searched next to binary, then in `/usr/local/etc`. `LD_LIBRARY_PATH` is also taken into account.
+2. Copy `/usr/share/check-link-consistency/check-link-consistency.conf.sample` to `/etc/check-link-consistency.conf` and edit.
 
 ## Run
 
@@ -26,4 +24,4 @@ To see warnings and `pacman -Sw` output, run with `-v` option; it's **useful to 
 
 ## Motivation
 
-Binary distros need such tool much more than source-based. It's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that I've hit this problem in less than a week after switching from Gentoo to **Artix**.
+Binary distros need such tool much more than source-based. It's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that I've hit this problem in less than a week after switching from Gentoo to Artix.
