@@ -10,7 +10,7 @@ It does as it sounds, and much better than [`findbrokenpkgs`](https://aur.archli
 
 ## Install
 
-1. Clone or download sources, run `make && sudo make install`. Binary will go to `/usr/bin/`, sample config -- to `/usr/share/check-link-consistency/`.
+1. On [ArtixLinux](https://artixlinux.org/), install package `check-link-consistency` from `universe` repository. Otherwise, clone or download sources, then run `make && sudo make install`. Binary will go to `/usr/bin/`, sample config -- to `/usr/share/check-link-consistency/`.
 
 2. Copy `/usr/share/check-link-consistency/check-link-consistency.conf.sample` to `/etc/check-link-consistency.conf` and edit.
 
@@ -24,4 +24,4 @@ To see warnings and `pacman -Sw` output, run with `-v` option; it's **useful to 
 
 ## Motivation
 
-Binary distros need such tool much more than source-based. It's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that I've hit this problem in less than a week after switching from Gentoo to Artix.
+Binary distros need such tool much more than source-based. It's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that [I've hit this problem](https://forum.artixlinux.org/index.php/topic,3331.msg21592.html#msg21592) in less than a week after switching from Gentoo to Artix.
