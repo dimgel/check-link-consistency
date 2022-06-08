@@ -4,7 +4,7 @@ It does as it sounds, and much better than [`findbrokenpkgs`](https://aur.archli
 
 * Analyzes optional dependencies (downloads but **NOT** installs) to exclude them from reported errors.
 
-* Has config file. There you can add more directories to scan for bins & libs, add library search path for packages or files. Together with optdeps analysis it makes "your system is consistent" outcome reachable.
+* Has [config  file](src/etc/check-link-consistency.conf.sample) where you can add more directories to scan for bins & libs, add library search path for packages or files. Together with optdeps analysis it makes "your system is consistent" outcome reachable.
 
 * Really fast. Without optdeps analysis (i.e. with `-O` option, pretty useless mode) on my system with warm disk cache it takes 0.35s against 3m10s for `findbrokenpkgs`.
 
