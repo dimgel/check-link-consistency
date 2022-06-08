@@ -1,0 +1,28 @@
+TODO Everything written here is a subject to review.
+
+
+Resolving libs
+==============
+
+Only one assumption was made here:
+
+
+$ORIGIN
+-------
+
+Google says that $ORIGIN is resolved "relative to executable". This sounds like "..., not to library", but:
+
+1. For example, most of /usr/lib/qtcreator/plugins/*.so have RPATH="$ORIGIN:$ORIGIN/../:$ORIGIN/../../Qt/lib",
+   and `ldd` resolves their neededLibs as if $ORIGIN was library's contianing directory itself, not /usr/bin/qtcreator executable's
+   containing directory /usr/bin: e.g. libStudioWelcome.so needs libCore.so (in the same dir), libUtils.so (in parent dir), etc.
+
+2. If shared library is linked to executables located in different dirs, and its $ORIGIN resolved
+   against those different dirs, then we'd need its multiple copies in memory, which is ridiculous.
+
+So I assume that $ORIGIN is relative to library itself (meaning -- to it's containing directory, of course), not to what it's linked to.
+
+
+Resolving symbols
+=================
+
+See `syms` git branch.

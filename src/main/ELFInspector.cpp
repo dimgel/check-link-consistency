@@ -226,9 +226,7 @@ namespace dimgel {
 		} catch (Abort& e) {
 			// Do nothing.
 		} catch (std::exception& e) {
-			if (ctx.verbosity >= Verbosity_WarnAndExec) {
-				ctx.log.warn("%s", e.what());
-			}
+			ctx.log.error("%s", e.what());
 		}
 	}
 

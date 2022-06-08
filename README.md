@@ -6,7 +6,7 @@ It does as it sounds, and much better than [`findbrokenpkgs`](https://aur.archli
 
 * Has config file. There you can add more directories to scan for bins & libs, add library search path for packages or files. Together with optdeps analysis it makes "your system is consistent" outcome reachable.
 
-* Really fast. Without optdeps analisys (i.e. with `-O` option, pretty useless mode) on my system with warm disk cache it takes 0.35s against 3m10s for `findbrokenpkgs`.
+* Really fast. Without optdeps analysis (i.e. with `-O` option, pretty useless mode) on my system with warm disk cache it takes 0.35s against 3m10s for `findbrokenpkgs`.
 
 ## Install
 
@@ -24,4 +24,4 @@ To see warnings and `pacman -Sw` output, run with `-v` option; it's **useful to 
 
 ## Motivation
 
-Binary distros need such tool much more than source-based. It's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that [I've hit this problem](https://forum.artixlinux.org/index.php/topic,3331.msg21592.html#msg21592) in less than a week after switching from Gentoo to Artix.
+Binary distros need such tool much more than source-based. From user's point of view it's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that [I've hit this problem](https://forum.artixlinux.org/index.php/topic,3331.msg21592.html#msg21592) in less than a week after switching from Gentoo to Artix.

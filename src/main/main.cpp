@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 			fprintf(stderr, "Usage: %s [options]\n"
 					"    -q  = Suppress INFO messages, output only errors\n"
 					"    -v  = Output warnings + exec() command lines + `pacman -Sw` output (useful to investigate)\n"
-					"    -vv = Huge debug output (~1.3G on my system)\n"
+					"    -vv = Huge (~1.3G on my system) but grep-friendly debug output\n"
 					"    -O  = Don't download & analyze optional dependencies\n"
 					"    -N  = No network: pretend optional dependencies are already downloaded;\n"
 					"          bypass `pacman -Sw` but otherwise process optdeps as usual\n"
@@ -361,7 +361,10 @@ int main(int argc, char* argv[]) {
 					!readConfig("/etc/" + (std::string)fs::path(argv[0]).filename() + ".conf", false) &&
 					ctx_verbosity >= Verbosity_VeryImportantWarn
 				) {
-					ctx_log.warn("Config file not found. Please copy /usr/share/check-link-consistency/*.conf.sample to /etc/*.conf and edit.");
+					ctx_log.warn(
+						"Config file not found; expect false errors.\n"
+						"      Please copy /usr/share/check-link-consistency/*.conf.sample to /etc/*.conf and edit."
+					);
 				}
 			}
 

@@ -1,6 +1,6 @@
 #include <archive.h>
-#include <fcntl.h>
 #include <archive_entry.h>
+#include <fcntl.h>
 #include "ArchiveReader.h"
 #include "Error.h"
 #include "Finally.h"

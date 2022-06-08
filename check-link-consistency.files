@@ -6,6 +6,7 @@ clean.sh
 Makefile
 notes/code-style.txt
 notes/decisions.txt
+notes/questions.txt
 notes/sources-pacman.txt
 src/main/util/Closeable.h
 src/main/util/Colors.h

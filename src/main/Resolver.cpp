@@ -106,13 +106,19 @@ namespace dimgel {
 		}
 		data.unresolvedNeededLibNames.reserve(150);
 
+		// Remove files containing nothing to resolve.
 		// Resolve neededLibs.
 		{
 			std::vector<std::unique_ptr<ThreadPool::Task>> tasks;
 			tasks.reserve(data.uniqueFilesByPath1.size());
-			for (auto [_, f] : data.uniqueFilesByPath1) {
-				if (!f->neededLibs.empty()) {
+			for (auto it = data.uniqueFilesByPath1.begin();  it != data.uniqueFilesByPath1.end();  ) {
+				File* f = it->second;
+				// f->isDymamicELF maybe false if ELFInspector::processOne_impl() threw internally; but f->neededLibs may already be filled.
+				if (f->isDynamicELF && !f->neededLibs.empty()) {
 					tasks.push_back(std::make_unique<ResolveLibsTask>(*this, *f));
+					++it;
+				} else {
+					it = data.uniqueFilesByPath1.erase(it);
 				}
 			}
 			ctx.threadPool.addTasks(ctx.threadPool.groupTasks(std::move(tasks)));

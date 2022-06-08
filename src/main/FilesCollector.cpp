@@ -164,7 +164,6 @@ namespace dimgel {
 					owner.elfInspector.processOne_file(f, [&](SearchPath p) { owner.scanAdditionalDir(p); });
 					if (!f.isDynamicELF) {
 						return;
-
 					}
 
 					// Assign package & apply config.

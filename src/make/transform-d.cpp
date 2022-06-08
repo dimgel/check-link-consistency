@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <regex>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 

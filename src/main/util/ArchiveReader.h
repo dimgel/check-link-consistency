@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <memory>
 #include "BufAndRef.h"
 #include "Closeable.h"

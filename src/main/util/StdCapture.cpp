@@ -10,7 +10,7 @@
 
 namespace dimgel {
 
-	StdCapture::StdCapture(FILE* f, int fileno, bool forForkExec) : f(f), fileno(fileno) {
+	StdCapture::StdCapture(FILE* f, int fd, bool forForkExec) : f(f), fd(fd) {
 		// `man 7 pipe`: pipe capacity is 65536 bytes. Pretty enough for me.
 		int pipeFDs[2];
 		if (::pipe(pipeFDs) == -1) {
@@ -39,7 +39,7 @@ namespace dimgel {
 	// "=default" implementation does not work correctly (unit tests throw "bad file descriptor"), I need to strictly swap() all fields.
 	StdCapture& StdCapture::operator =(StdCapture&& o) {
 		std::swap(f, o.f);
-		std::swap(fileno, o.fileno);
+		std::swap(fd, o.fd);
 		read = std::move(o.read);
 		write = std::move(o.write);
 		oldWrite = std::move(o.oldWrite);
@@ -49,9 +49,9 @@ namespace dimgel {
 
 
 	StdCapture::~StdCapture() {
-		// TODO Do I need to read fileno out before destroying?
+		// TODO Do I need to read out fd out before destroying?
 		if (oldWrite != -1) {
-			dup2(oldWrite, fileno);
+			dup2(oldWrite, fd);
 		}
 	}
 
@@ -59,10 +59,10 @@ namespace dimgel {
 	void StdCapture::initStdWrite() {
 		fflush(f);
 
-		if ((oldWrite = dup(fileno)) == -1) {
+		if ((oldWrite = dup(fd)) == -1) {
 			throw Error(FILE_LINE "dup() failed: %s", ConstCharPtr{strerror(errno)});
 		}
-		if (dup2(write, fileno) == -1) {
+		if (dup2(write, fd) == -1) {
 			throw Error(FILE_LINE "dup2() failed: %s", ConstCharPtr{strerror(errno)});
 		}
 		write.close();
