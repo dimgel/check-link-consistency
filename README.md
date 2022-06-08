@@ -25,3 +25,15 @@ To see warnings and `pacman -Sw` output, run with `-v` option; it's **useful to 
 ## Motivation
 
 Binary distros need such tool much more than source-based. From user's point of view it's like static vs dynamic typing in programming languages: source-based distro checks package's dependencies when program builds, binary -- when it runs. Funny that [I've hit this problem](https://forum.artixlinux.org/index.php/topic,3331.msg21592.html#msg21592) in less than a week after switching from Gentoo to Artix.
+
+## Want symbol resolution? No you don't.
+
+For 6 months I used version that performs not only `.so` resolution, but also symbol resolution. Turned out 0% use + 100% trouble: 
+
+* Never seen positive hits.
+
+* Config file is 5 times larger and requires editing on every upgrade of core packages like gcc, perl, python, nvidia drivers, etc.: lots of `.so` dependencies had to be specified manually and their paths contain versions.
+
+* Correct LOCAL symbol resolution is still a [mystery](https://stackoverflow.com/questions/70920442/local-symbols-in-elfs-dynsym-section-are-not-actually-local-how-to-tell).
+
+But if you're interested, I can upload this codebase into separate `syms` branch.
