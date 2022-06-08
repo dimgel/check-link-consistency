@@ -30,7 +30,7 @@ Binary distros need such tool much more than source-based. From user's point of 
 
 For 6 months I used version that performs not only `.so` resolution, but also symbol resolution. Turned out 0% use + 100% trouble: 
 
-* Never seen positive hits.
+* Never seen anything but false positives.
 
 * Config file is 5 times larger and requires editing on every upgrade of core packages like gcc, perl, python, nvidia drivers, etc.: lots of `.so` dependencies had to be specified manually and their paths contain versions.
 
