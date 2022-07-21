@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "Error.h"
+#include "Finally.h"
 #include "SplitMutableString.h"
 #include "StdCapture.h"
 #include "util.h"
@@ -168,37 +169,35 @@ namespace dimgel::util {
 				// Not found -- it's OK.
 				return;
 			} else {
-				throw Error("::opendir(`%s`) failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+				throw Error(FILE_LINE "::opendir(`%s`) failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
 			}
 		}
 
-		try {
-			dirent* de;
-			while ((de = readdir(d)) != nullptr) {
-				if (de->d_name[0] == '.' && (de->d_name[1] == '.' || de->d_name[1] == '\0')) {
-					continue;
-				}
-				if (de->d_type == DT_UNKNOWN) {
-					// `man 3 readdir`: not all filesystems support d_type.
-					// Since I don't want additional statx() syscall on each direntry, there's no reason to continue.
-					throw Error(
-						FILE_LINE "Could not read directory `%s`: unsupported filesystem: got direntry `%s` with d_type = DT_UNKNOWN",
-						ConstCharPtr{path}, ConstCharPtr{de->d_name}
-					);
-				}
-				callback(*de);
+		Finally dFin([&] {
+			closedir(d);
+		});
+
+		dirent* de;
+		while ((de = readdir(d)) != nullptr) {
+			if (de->d_name[0] == '.' && (de->d_name[1] == '.' || de->d_name[1] == '\0')) {
+				continue;
 			}
-			closedir(d);
-		} catch (...) {
-			closedir(d);
-			throw;
+			if (de->d_type == DT_UNKNOWN) {
+				// `man 3 readdir`: not all filesystems support d_type.
+				// Since I don't want additional statx() syscall on each direntry, there's no reason to continue.
+				throw Error(
+					FILE_LINE "Could not read directory `%s`: unsupported filesystem: got direntry `%s` with d_type = DT_UNKNOWN",
+					ConstCharPtr{path}, ConstCharPtr{de->d_name}
+				);
+			}
+			callback(*de);
 		}
 	}
 
 
 	// https://stackoverflow.com/a/2602060
 	BufAndRef readFile(const char* path) {
-		Closeable fd(open(path, O_RDONLY));
+		Closeable fd {open(path, O_RDONLY)};
 		if (fd < 0) {
 			throw Error(FILE_LINE "readFile(`%s`): open() failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
 		}

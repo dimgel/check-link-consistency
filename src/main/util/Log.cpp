@@ -4,7 +4,7 @@
 
 namespace dimgel {
 
-	// Patially copy-pasted into Error::Error().
+	// Partially copy-pasted into Error::Error().
 	void Log::impl(int fd, const char* pfx, StringRef color, const char* format, va_list args) {
 
 		// Must be large enough for long EXEC command lines.

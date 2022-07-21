@@ -24,7 +24,7 @@ addOptDepend=wine lib32-gstreamer
 
 
 # Syntax: addLibPath={package|/abs/file/path|/abs/directory/path/**} {/abs/directory/path}
-# Adds specified directory as library search path for {all files in package | specific file | all flies in directory and its subdirectories}.
+# Adds specified directory as library search path for {all files in package | specific file | all files in directory and its subdirectories}.
 # Directory is added with highest priority (before RPATH), because package-specific libs may override system ones.
 # Applies to optional dependencies too: e.g. script resolves `libjawt.so` for `libreoffice-fresh` even if I don't have `java-runtime` installed. 
 #

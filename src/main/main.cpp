@@ -44,44 +44,40 @@ int main(int argc, char* argv[]) {
 	Colors* ctx_colors = &Colors::enabled;
 	{
 		bool ok = true;
-		{
-			// On '-h' option, getopt() prints "{argv[0]}: invalid option -- 'h'" which hurts my aesthetic feelings.
-			auto capt = StdCapture::createStdErr();
-
-			int opt;
-			while (ok && (opt = getopt(argc, argv, "qvONWC")) != -1) {
-				switch (opt) {
-					case 'q': {
-						ctx_verbosity = Verbosity_Quiet;
-						break;
-					}
-					case 'v': {
-						ctx_verbosity = std::max(ctx_verbosity, Verbosity_Default) + 1;
-						break;
-					}
-					case 'O': {
-						ctx_useOptionalDeps = false;
-						break;
-					}
-					case 'N': {
-						ctx_noNetwork = true;
-						break;
-					}
-					case 'W': {
-						ctx_wideOutput = false;
-						break;
-					}
-					case 'C': {
-						ctx_colors = &Colors::disabled;
-						break;
-					}
-					default: {
-						ok = false;
-						break;
-					}
+		int opt;
+		opterr = false;
+		while (ok && (opt = getopt(argc, argv, "qvONWC")) != -1) {
+			switch (opt) {
+				case 'q': {
+					ctx_verbosity = Verbosity_Quiet;
+					break;
 				}
-			} // while()
-		}
+				case 'v': {
+					ctx_verbosity = std::max(ctx_verbosity, Verbosity_Default) + 1;
+					break;
+				}
+				case 'O': {
+					ctx_useOptionalDeps = false;
+					break;
+				}
+				case 'N': {
+					ctx_noNetwork = true;
+					break;
+				}
+				case 'W': {
+					ctx_wideOutput = false;
+					break;
+				}
+				case 'C': {
+					ctx_colors = &Colors::disabled;
+					break;
+				}
+				default: {
+					ok = false;
+					break;
+				}
+			}
+		} // while()
 		if (!ok) {
 			fprintf(stderr, "Usage: %s [options]\n"
 					"    -q  = Suppress INFO messages, output only errors\n"
@@ -93,10 +89,10 @@ int main(int argc, char* argv[]) {
 					"    -W  = Disable wide output\n"
 					"    -C  = Don't colorize output\n"
 					"Status codes:\n"
-					"    0 = system is consistent :)\n"
-					"    1 = not consistent :(\n"
-					"    2 = some bad error :(((\n"
-					"  139 = even worse, if you catch my meaning ;)\n",
+					"     0  = system is consistent :)\n"
+					"     1  = not consistent :(\n"
+					"     2  = some bad error :(((\n"
+					"   139  = even worse, if you catch my meaning ;)\n",
 				fs::path(argv[0]).filename().c_str()
 			);
 			return ExitStatus_InternalError;

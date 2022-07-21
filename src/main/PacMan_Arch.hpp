@@ -216,7 +216,7 @@ namespace dimgel {
 				try {
 					x = util::forkExecStdCapture(argv, {.requireStatus0 = true, .captureStdOut = true, .captureStdErr = false});
 				} catch (std::exception& e) {
-					owner.ctx.log.error("Skipping optional dependency `%s`: exec() failed: %s", ConstCharPtr{optDepName}, ConstCharPtr{e.what()});
+					owner.ctx.log.error("skipping optional dependency `%s`: exec() failed: %s", ConstCharPtr{optDepName}, ConstCharPtr{e.what()});
 					return;
 				}
 

@@ -9,7 +9,7 @@ namespace dimgel {
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
 
-		// Patially copy-pasted from Log::impl().
+		// Partially copy-pasted from Log::impl().
 		Error::Error(const char* format, ...) : std::runtime_error(({
 			va_list args;
 			va_start(args, format);
