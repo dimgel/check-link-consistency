@@ -6,7 +6,7 @@ clean.sh
 Makefile
 notes/code-style.txt
 notes/decisions.txt
-notes/sources-pacman.txt
+notes/pacman-sources.txt
 src/main/util/Closeable.h
 src/main/util/Colors.h
 src/main/ELFInspector.cpp
