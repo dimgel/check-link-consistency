@@ -86,19 +86,20 @@ namespace dimgel {
 
 				for (auto s : result.filePaths1) {
 					if (auto t2 = owner.data.packagesByFilePath1.insert({s, result.p});  !t2.second) {
-						if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-							auto p0 = t2.first->second;
-							owner.ctx.log.warn(
-								FILE_LINE "read `%s`: another installed package already owns file `%s`: `%s %s`",
-								ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s}, ConstCharPtr{p0->name}, ConstCharPtr{p0->version}
-							);
-						}
-					} else if (owner.ctx.verbosity >= Verbosity_Debug) {
+						// This was a warning once, but from pacman's point of view it's error.
+						// Don't know if `pacman -Qkk` checks for it, won't be bad to fail-fast here anyway.
+						auto p0 = t2.first->second;
+						throw Error(
+							FILE_LINE "read `%s`: another installed package already owns file `%s`: `%s %s`",
+							ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s}, ConstCharPtr{p0->name}, ConstCharPtr{p0->version}
+						);
+					}
+					if (owner.ctx.verbosity >= Verbosity_Debug) {
 						owner.ctx.log.debug(FILE_LINE "read `%s`: owns file `%s`", ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s});
 					}
 				}
 			}
-		};   // class Task
+		}; // class Task
 
 
 		data.packagesByName.reserve(1500);
@@ -118,7 +119,7 @@ namespace dimgel {
 			ctx.log.debug(FILE_LINE "stats: data.packagesByProvides.size() = %lu", ulong{data.packagesByProvides.size()});
 			ctx.log.debug(FILE_LINE "stats: data.packagesByFilePath1.size() = %lu", ulong{data.packagesByFilePath1.size()});
 		}
-	}  // PacMan::parseInstalledPackages()
+	} // PacMan::parseInstalledPackages()
 
 
 	//----------------------------------------------------------------------------------------------------------------------------------------

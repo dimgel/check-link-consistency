@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include "PacMan_Arch.h"
 #include "util/ArchiveReader.h"
-#include "util/Closeable.h"
 #include "util/Error.h"
 #include "util/Log.h"
 #include "util/SplitMutableString.h"
