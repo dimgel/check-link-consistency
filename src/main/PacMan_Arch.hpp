@@ -155,6 +155,7 @@ namespace dimgel {
 					argv.clear();
 					addArg("/usr/bin/pacman");
 					addArg("-Sw");
+					addArg(ctx.colorize ? "--color=always" : "--color=never");
 					addArg("--noconfirm");
 					while (it != data.optDependsSorted.end() && addArg(*it)) {
 						++it;
@@ -200,16 +201,18 @@ namespace dimgel {
 			    : owner(owner), optDepName(optDepName), archiveName(archiveName) {}
 
 			void compute() override {
+				const char* argvColor = owner.ctx.colorize ? "--color=always" : "--color=never";
 				const char* argv[] = {
 					"/usr/bin/pacman",
 					"-Sw",
+					argvColor,
 					"--print-format",
 					"%n %l",
 					optDepName.cp(),
 					nullptr
 				};
 				if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-					owner.ctx.log.exec("/usr/bin/pacman -Sw --print-format '%%n %%l' %s", ConstCharPtr{optDepName});
+					owner.ctx.log.exec("/usr/bin/pacman -Sw %s --print-format '%%n %%l' %s", ConstCharPtr{argvColor}, ConstCharPtr{optDepName});
 				}
 				util::forkExecStdCapture_Result x;
 				try {

@@ -89,6 +89,7 @@ namespace dimgel {
 
 		int verbosity;
 		bool wideOutput;
+		bool colorize;
 		struct Colors& colors;
 		bool useOptionalDeps;
 		bool noNetwork;

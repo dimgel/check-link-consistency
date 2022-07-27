@@ -13,7 +13,6 @@
 #include "util/IniParser.h"
 #include "util/Log.h"
 #include "util/SplitMutableString.h"
-#include "util/StdCapture.h"
 #include "util/ThreadPool.h"
 #include "util/util.h"
 #include STRINGIZE(CONCAT2(defaults_, DISTRO.hpp))
@@ -27,7 +26,7 @@ namespace fs = std::filesystem;
 
 static constexpr int ExitStatus_OK = 0;
 static constexpr int ExitStatus_Inconsistent = 1;
-static constexpr int ExitStatus_InternalError = 2;
+static constexpr int ExitStatus_Error = 2;
 
 
 int main(int argc, char* argv[]) {
@@ -41,6 +40,7 @@ int main(int argc, char* argv[]) {
 	bool ctx_wideOutput = true;
 	bool ctx_useOptionalDeps = true;
 	bool ctx_noNetwork = false;
+	bool ctx_colorize = true;
 	Colors* ctx_colors = &Colors::enabled;
 	{
 		bool ok = true;
@@ -69,12 +69,12 @@ int main(int argc, char* argv[]) {
 					break;
 				}
 				case 'C': {
+					ctx_colorize = false;
 					ctx_colors = &Colors::disabled;
 					break;
 				}
 				default: {
 					ok = false;
-					break;
 				}
 			}
 		} // while()
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
 					"   139  = even worse, if you catch my meaning ;)\n",
 				fs::path(argv[0]).filename().c_str()
 			);
-			return ExitStatus_InternalError;
+			return ExitStatus_Error;
 		}
 	}
 
@@ -382,6 +382,7 @@ int main(int argc, char* argv[]) {
 		Context ctx {
 			.verbosity = ctx_verbosity,
 			.wideOutput = ctx_wideOutput,
+			.colorize = ctx_colorize,
 			.colors = *ctx_colors,
 			.useOptionalDeps = ctx_useOptionalDeps,
 			.noNetwork = ctx_noNetwork,
@@ -477,9 +478,9 @@ int main(int argc, char* argv[]) {
 
 		return ok ? ExitStatus_OK : ExitStatus_Inconsistent;
 	} catch (Abort& e) {
-		return ExitStatus_InternalError;
+		return ExitStatus_Error;
 	} catch (std::exception& e) {
 		ctx_log.error("%s", ConstCharPtr{e.what()});
-		return ExitStatus_InternalError;
+		return ExitStatus_Error;
 	}
 }
