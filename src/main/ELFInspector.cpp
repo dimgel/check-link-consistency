@@ -7,7 +7,6 @@
 #include "util/Finally.h"
 #include "util/Log.h"
 #include "util/SplitMutableString.h"
-#include "util/ThreadPool.h"
 #include "util/util.h"
 
 #define FILE_LINE "ELFInspector:" LINE ": "
@@ -46,7 +45,7 @@ namespace dimgel {
 						// Ignore because we don't know which current dir this path is relative to.
 						// WARN only if verbose, because so many warnings is non-informative for user; and maybe PacMan will resolve all problems.
 						if (ctx.verbosity >= Verbosity_WarnAndExec) {
-							ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: non-absolute path", ConstCharPtr{f.path1}, ConstCharPtr{description}, ConstCharPtr{sv});
+							ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: non-absolute path", f.path1.cp(), description, sv.cp());
 						}
 						continue;
 					}
@@ -54,20 +53,20 @@ namespace dimgel {
 				char path0[PATH_MAX];
 				if (!util::realPath(svEffective.cp(), path0)) {
 					if (ctx.verbosity >= Verbosity_WarnAndExec) {
-						ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: missing path", ConstCharPtr{f.path1}, ConstCharPtr{description}, ConstCharPtr{sv});
+						ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: missing path", f.path1.cp(), description, sv.cp());
 					}
 					continue;
 				}
 				if (strcmp(sv.cp(), path0) && ctx.verbosity >= Verbosity_Debug) {
 					ctx.log.debug(
 						FILE_LINE "`/%s`: rewrite %s `%s` ---> `%s`",
-						ConstCharPtr{f.path1}, ConstCharPtr{description}, ConstCharPtr{sv}, ConstCharPtr{path0}
+						f.path1.cp(), description, sv.cp(), path0
 					);
 				}
 				auto st = util::statx(path0);
 				if (!S_ISDIR(st.mode)) {
 					if (ctx.verbosity >= Verbosity_WarnAndExec) {
-						ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: not a directory", ConstCharPtr{f.path1}, ConstCharPtr{description}, ConstCharPtr{sv});
+						ctx.log.warn(FILE_LINE "`/%s`: skip %s `%s`: not a directory", f.path1.cp(), description, sv.cp());
 					}
 					continue;
 				}
@@ -79,7 +78,7 @@ namespace dimgel {
 				scanAdditionalDir(sp);
 				runPaths.push_back(sp);
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "`/%s`: add %s `%s`", ConstCharPtr{f.path1}, ConstCharPtr{description}, ConstCharPtr{sv});
+					ctx.log.debug(FILE_LINE "`/%s`: add %s `%s`", f.path1.cp(), description, sv.cp());
 				}
 			}
 		};
@@ -106,17 +105,17 @@ namespace dimgel {
 					if (value[0] != '/' && strchr(value, '/') != nullptr) {
 						// I saw examples like "./subdir", but I don't know which current dir is to search against.
 						if (ctx.verbosity >= Verbosity_WarnAndExec) {
-							ctx.log.warn(FILE_LINE "`/%s`: skip needed lib `%s`: non-absolute but contains '/'", ConstCharPtr{f.path1}, ConstCharPtr{value});
+							ctx.log.warn(FILE_LINE "`/%s`: skip needed lib `%s`: non-absolute but contains '/'", f.path1.cp(), value);
 						}
 						continue;
 					}
 					if (f.neededLibs.insert(alloc::String{ctx.mm, value}).second) {
 						if (ctx.verbosity >= Verbosity_Debug) {
-							ctx.log.debug(FILE_LINE "`/%s`: add needed lib `%s`", ConstCharPtr{f.path1}, ConstCharPtr{value});
+							ctx.log.debug(FILE_LINE "`/%s`: add needed lib `%s`", f.path1.cp(), value);
 						}
 					} else {
 						if (ctx.verbosity >= Verbosity_Debug) {
-							ctx.log.debug(FILE_LINE "`/%s`: skip needed lib `%s`: already added (by config?)", ConstCharPtr{f.path1}, ConstCharPtr{value});
+							ctx.log.debug(FILE_LINE "`/%s`: skip needed lib `%s`: already added (by config?)", f.path1.cp(), value);
 						}
 					}
 				}
@@ -127,13 +126,13 @@ namespace dimgel {
 
 	void ELFInspector::processOne_impl(Elf* e, File& f, bool fromArchive, std::function<void(SearchPath)> scanAdditionalDir) {
 		if (f.isInspected.exchange(true)) {
-			throw Error(FILE_LINE "`/%s`: internal error: already inspected", ConstCharPtr{f.path1});
+			throw Error(FILE_LINE "`/%s`: internal error: already inspected", f.path1.cp());
 		}
 
 		try {
 			if (elf_kind(e) != ELF_K_ELF) {
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "`/%s`: skip: not ELF", ConstCharPtr{f.path1});
+					ctx.log.debug(FILE_LINE "`/%s`: skip: not ELF", f.path1.cp());
 				}
 				return;
 			}
@@ -141,15 +140,15 @@ namespace dimgel {
 			int i;
 			GElf_Ehdr ehdr;
 			if (gelf_getehdr(e, &ehdr) == nullptr) {
-				throw Error(FILE_LINE "`/%s`: skip: gelf_getehdr() failed: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+				throw Error(FILE_LINE "`/%s`: skip: gelf_getehdr() failed: %s", f.path1.cp(), elf_errmsg(-1));
 			}
 			if (i = gelf_getclass(e);  i != ELFCLASS32 && i != ELFCLASS64) {
-				throw Error(FILE_LINE "`/%s`: skip: gelf_getclass() failed: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+				throw Error(FILE_LINE "`/%s`: skip: gelf_getclass() failed: %s", f.path1.cp(), elf_errmsg(-1));
 			}
 			f.is32 = i == ELFCLASS32;
 			if (ehdr.e_type != ET_EXEC && ehdr.e_type != ET_DYN) {
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "`/%s`: skip: e_type != EXEC|DYN", ConstCharPtr{f.path1});
+					ctx.log.debug(FILE_LINE "`/%s`: skip: e_type != EXEC|DYN", f.path1.cp());
 				}
 				return;
 			}
@@ -159,14 +158,14 @@ namespace dimgel {
 			while ((scn = elf_nextscn(e, scn)) != nullptr) {
 				GElf_Shdr hdr;
 				if (gelf_getshdr(scn, &hdr) == nullptr) {
-					throw Error(FILE_LINE "`/%s`: skip: gelf_getshdr() failed: %s", ConstCharPtr{f.path1.cp()}, ConstCharPtr{elf_errmsg(-1)});
+					throw Error(FILE_LINE "`/%s`: skip: gelf_getshdr() failed: %s", f.path1.cp(), elf_errmsg(-1));
 				}
 
 				if (hdr.sh_type != SHT_DYNAMIC) {
 					continue;
 				}
 				if (foundDynamicSection) {
-					throw Error(FILE_LINE "`/%s`: skip: found multiple DYNAMIC sections", ConstCharPtr{f.path1});
+					throw Error(FILE_LINE "`/%s`: skip: found multiple DYNAMIC sections", f.path1.cp());
 				}
 				foundDynamicSection = true;
 				if (fromArchive) {
@@ -176,27 +175,27 @@ namespace dimgel {
 				// Check sh_link points to string table.
 				{
 					if (hdr.sh_link == 0) {
-						throw Error(FILE_LINE "`/%s`: skip: sh_link==0 in DYNAMIC section", ConstCharPtr{f.path1});
+						throw Error(FILE_LINE "`/%s`: skip: sh_link==0 in DYNAMIC section", f.path1.cp());
 					}
 					Elf_Scn* scnStr = nullptr;
 					if ((scnStr = elf_getscn(e, hdr.sh_link)) == nullptr) {
-						throw Error(FILE_LINE "`/%s`: skip: elf_getscn(sh_link) failed in DYNAMIC section: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+						throw Error(FILE_LINE "`/%s`: skip: elf_getscn(sh_link) failed in DYNAMIC section: %s", f.path1.cp(), elf_errmsg(-1));
 					}
 					GElf_Shdr strHdr;
 					if (gelf_getshdr(scnStr, &strHdr) == nullptr) {
-						throw Error(FILE_LINE "`/%s`: skip: gelf_getshdr(sh_link) failed in DYNAMIC section: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+						throw Error(FILE_LINE "`/%s`: skip: gelf_getshdr(sh_link) failed in DYNAMIC section: %s", f.path1.cp(), elf_errmsg(-1));
 					}
 					if (strHdr.sh_type != SHT_STRTAB) {
-						throw Error(FILE_LINE "`/%s`: skip: sh_link points to non-strings in DYNAMIC section", ConstCharPtr{f.path1});
+						throw Error(FILE_LINE "`/%s`: skip: sh_link points to non-strings in DYNAMIC section", f.path1.cp());
 					}
 				}
 
 				Elf_Data* data = elf_getdata(scn, nullptr);
 				if (data == nullptr) {
-					throw Error(FILE_LINE "`/%s`: skip: no data in DYNAMIC section", ConstCharPtr{f.path1});
+					throw Error(FILE_LINE "`/%s`: skip: no data in DYNAMIC section", f.path1.cp());
 				}
 				if (elf_getdata(scn, data) != nullptr) {
-					throw Error(FILE_LINE "`/%s`: skip: multiple data in DYNAMIC section", ConstCharPtr{f.path1});
+					throw Error(FILE_LINE "`/%s`: skip: multiple data in DYNAMIC section", f.path1.cp());
 				}
 
 				processOne_impl_scanDynamicSection(e, f, hdr, data, scanAdditionalDir);
@@ -204,7 +203,7 @@ namespace dimgel {
 
 			if (!foundDynamicSection) {
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "`/%s`: skip: not dynamic ELF", ConstCharPtr{f.path1});
+					ctx.log.debug(FILE_LINE "`/%s`: skip: not dynamic ELF", f.path1.cp());
 				}
 				return;
 			}
@@ -216,7 +215,7 @@ namespace dimgel {
 			if (ctx.verbosity >= Verbosity_Debug) {
 				ctx.log.debug(
 					FILE_LINE "`/%s`: is %s-bit %s%s",
-					ConstCharPtr{f.path1}, (f.is32 ? "32" : "64"), (f.isLib ? "library" : "executable"), (f.isSecure ? ", secure" : "")
+					f.path1.cp(), (f.is32 ? "32" : "64"), (f.isLib ? "library" : "executable"), (f.isSecure ? ", secure" : "")
 				);
 			}
 
@@ -235,12 +234,12 @@ namespace dimgel {
 		Closeable fd {::open(f.path1.cp(), O_RDONLY)};
 		if (fd == -1) {
 			// Don't throw: few broken files (including files with broken ELF structure libelf will fail on) should not break whole thing.
-			ctx.log.error(FILE_LINE "`/%s`: open() failed: %s", ConstCharPtr{f.path1}, ConstCharPtr{strerror(errno)});
+			ctx.log.error(FILE_LINE "`/%s`: open() failed: %s", f.path1.cp(), strerror(errno));
 			return;
 		}
 		Elf* e = elf_begin(fd, ELF_C_READ, nullptr);
 		if (e == nullptr) {
-			ctx.log.error(FILE_LINE "`/%s`: elf_begin() failed: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+			ctx.log.error(FILE_LINE "`/%s`: elf_begin() failed: %s", f.path1.cp(), elf_errmsg(-1));
 			return;
 		}
 		Finally eFin([&] {
@@ -253,7 +252,7 @@ namespace dimgel {
 	void ELFInspector::processOne_fromArchive(File& f, char* buf, size_t size) {
 		Elf* e = elf_memory(buf, size);
 		if (e == nullptr) {
-			ctx.log.error(FILE_LINE "`/%s`: elf_memory() failed: %s", ConstCharPtr{f.path1}, ConstCharPtr{elf_errmsg(-1)});
+			ctx.log.error(FILE_LINE "`/%s`: elf_memory() failed: %s", f.path1.cp(), elf_errmsg(-1));
 			return;
 		}
 		Finally eFin([&] {

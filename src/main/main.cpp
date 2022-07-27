@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
 	try {
 		// To process relative paths in /var/lib/pacman/local/*/files as absolute ones, like pacman does.
 		if (chdir("/") == -1) {
-			throw Error("chdir(\"/\") failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error("chdir(\"/\") failed: %s", strerror(errno));
 		}
 
 		// Configuration.
@@ -122,22 +122,22 @@ int main(int argc, char* argv[]) {
 			// See /notes/decisions.txt.
 			auto append = [&](const char* source, const char* path, std::vector<SearchPath>& target) {
 				if (path[0] == '\0') {
-					throw Error("Config: invalid %s entry `%s`: path is empty", ConstCharPtr{source}, ConstCharPtr{path});
+					throw Error("Config: invalid %s entry `%s`: path is empty", source, path);
 				}
 				if (path[0] != '/') {
-					throw Error("Config: invalid %s entry `%s`: path must be absolute", ConstCharPtr{source}, ConstCharPtr{path});
+					throw Error("Config: invalid %s entry `%s`: path must be absolute", source, path);
 				}
 
 				char path0[PATH_MAX];
 				if (!util::realPath(path, path0)) {
 					if (ctx_verbosity >= Verbosity_WarnAndExec) {
-						ctx_log.warn("Config: skipping %s entry `%s`: directory does not exist", ConstCharPtr{source}, ConstCharPtr{path});
+						ctx_log.warn("Config: skipping %s entry `%s`: directory does not exist", source, path);
 					}
 					return;
 				}
 				if (strcmp(path0, path)) {
 					if (ctx_verbosity >= Verbosity_Debug) {
-						ctx_log.debug("Config: rewritten %s entry `%s` ---> `%s`", ConstCharPtr{source}, ConstCharPtr{path}, ConstCharPtr{path0});
+						ctx_log.debug("Config: rewritten %s entry `%s` ---> `%s`", source, path, path0);
 					}
 					path = path0;
 				}
@@ -147,14 +147,14 @@ int main(int argc, char* argv[]) {
 				auto st = util::statx(path);
 				if (!S_ISDIR(st.mode)) {
 					if (ctx_verbosity >= Verbosity_WarnAndExec) {
-						ctx_log.warn("Config: skipping %s entry `%s`: not a directory, or unsupported filesystem", ConstCharPtr{source}, ConstCharPtr{path});
+						ctx_log.warn("Config: skipping %s entry `%s`: not a directory, or unsupported filesystem", source, path);
 					}
 					return;
 				}
 				for (auto& sp : target) {
 					if (sp.inode == st.inode) {
 						if (ctx_verbosity >= Verbosity_Debug) {
-							ctx_log.debug("Config: skipping %s entry `%s`: duplicate", ConstCharPtr{source}, ConstCharPtr{path});
+							ctx_log.debug("Config: skipping %s entry `%s`: duplicate", source, path);
 						}
 						return;
 					}
@@ -172,7 +172,7 @@ int main(int argc, char* argv[]) {
 				for (auto& sp : spp) {
 					os << " `" << sp.path1 << "`";
 				}
-				(ctx_log.*f)("%s", ConstCharPtr{os.str().c_str()});
+				(ctx_log.*f)("%s", os.str().c_str());
 			};
 
 			// Apply defaults.
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
 					}
 					if (ctx_verbosity >= (isLocal ? Verbosity_VeryImportantWarn : Verbosity_Debug)) {
 						Log::F f = isLocal ? &Log::warn : &Log::debug;
-						(ctx_log.*f)("Reading config file: `%s`...", ConstCharPtr{path.c_str()});
+						(ctx_log.*f)("Reading config file: `%s`...", path.c_str());
 					}
 					auto contents = util::readFile(path.c_str());
 					std::regex rAddLib{"^\\s*(\\S+)\\s+(\\S+)\\s*$"};
@@ -223,13 +223,13 @@ int main(int argc, char* argv[]) {
 						auto parseAddLibPath = [&]() {
 							std::cmatch m;
 							if (!util::regex_match(l.value(), m, rAddLib)) {
-								throw Error("Config line %d: bad %s: invalid syntax", int{l.lineNo()}, ConstCharPtr{l.key()});
+								throw Error("Config line %d: bad %s: invalid syntax", l.lineNo(), l.key().cp());
 							}
 							std::string where = m[1];   // Where to add (package | /file/path | /directory/**).
 							std::string what = m[2];    // What to add (/lib/path | /search/path).
 
 							if (what[0] != '/') {
-								throw Error("Config line %d: bad %s: `%s` must be absolute path", int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{what.c_str()});
+								throw Error("Config line %d: bad %s: `%s` must be absolute path", l.lineNo(), l.key().cp(), what.c_str());
 							}
 							char whatReal0[PATH_MAX];
 							const char* whatEffective;
@@ -238,13 +238,13 @@ int main(int argc, char* argv[]) {
 								whatEffective = whatReal0;
 								whatSt = util::statx(whatEffective);
 								if (!S_ISDIR(whatSt.mode)) {
-									throw Error("Config line %d: bad %s: `%s` is not a directory", int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{whatEffective});
+									throw Error("Config line %d: bad %s: `%s` is not a directory", l.lineNo(), l.key().cp(), whatEffective);
 								}
 							} else {
 								if (ctx_verbosity >= Verbosity_WarnAndExec) {
 									ctx_log.warn(
 										"Config line %d: suspicious %s: `%s` does not exist; optional dependency?",
-										int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{what.c_str()}
+										l.lineNo(), l.key().cp(), what.c_str()
 									);
 								}
 								whatEffective = what.c_str();
@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
 								if (ctx_verbosity >= Verbosity_Debug) {
 									ctx_log.debug(
 										"Config line %d: %s = `%s` ---> to all files in package `%s`",
-										int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{whatEffective}, ConstCharPtr{where.c_str()}
+										l.lineNo(), l.key().cp(), whatEffective, where.c_str()
 									);
 								}
 								ctx_addLibPathsByPackageName[alloc::String{ctx_mm, where}].push_back(AddLibPath{
@@ -264,12 +264,12 @@ int main(int argc, char* argv[]) {
 							} else if (!where.starts_with('/')) {
 								throw Error(
 									"Config: line %d, bad %s: `%s` is neither package name nor absolute path",
-									int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{where.c_str()}
+									l.lineNo(), l.key().cp(), where.c_str()
 								);
 							} else if (where.ends_with('/') || where.ends_with("/*")) {
 								throw Error(
 									"Config line %d: bad %s: `%s` ends with `/` or `/*`, did you mean `/**`?",
-									int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{where.c_str()}
+									l.lineNo(), l.key().cp(), where.c_str()
 								);
 							} else {
 								bool whereIsDir = where.ends_with("/**");
@@ -281,7 +281,7 @@ int main(int argc, char* argv[]) {
 									if (ctx_verbosity >= Verbosity_WarnAndExec) {
 										ctx_log.warn(
 											FILE_LINE "Config line %d: ignore %s: `%s` does not exist",
-											int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{where.c_str()}
+											l.lineNo(), l.key().cp(), where.c_str()
 										);
 									}
 									return;
@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 								if ((whereIsDir && !S_ISDIR(whereSt.mode)) || (!whereIsDir && !S_ISREG(whereSt.mode))) {
 									throw Error(
 										"Config line %d: bad %s: `%s` is not a %s",
-										int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{where.c_str()}, (whereIsDir ? "directory" : "regular file")
+										l.lineNo(), l.key().cp(), where.c_str(), (whereIsDir ? "directory" : "regular file")
 									);
 								}
 
@@ -304,8 +304,7 @@ int main(int argc, char* argv[]) {
 								if (ctx_verbosity >= Verbosity_Debug) {
 									ctx_log.debug(
 										"Config line %d: %s = `%s` ---> to %s `%s`",
-										int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{whatEffective}, (whereIsDir ? "all files in directory" : "file"),
-										ConstCharPtr{whereReal0 + 1}
+										l.lineNo(), l.key().cp(), whatEffective, (whereIsDir ? "all files in directory" : "file"), whereReal0 + 1
 									);
 								}
 								ctx_addLibPathsByFilePath1Prefix[alloc::String{ctx_mm, whereReal0 + 1}].push_back(AddLibPath{
@@ -323,23 +322,20 @@ int main(int argc, char* argv[]) {
 
 							std::cmatch m;
 							if (!util::regex_match(l.value(), m, rAddOptDepend)) {
-								throw Error("Config line %d: bad %s: invalid syntax", int{l.lineNo()}, ConstCharPtr{l.key()});
+								throw Error("Config line %d: bad %s: invalid syntax", l.lineNo(), l.key().cp());
 							}
 							std::string package = m[1];
 							std::string optdep = m[2];
 							if (package.find('/') != std::string::npos) {
-								throw Error("Config line %d: bad %s: package name `%s` contains '/'", int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{package.c_str()});
+								throw Error("Config line %d: bad %s: package name `%s` contains '/'", l.lineNo(), l.key().cp(), package.c_str());
 							}
 							if (optdep.find('/') != std::string::npos) {
-								throw Error("Config line %d: bad %s: optional dependency `%s` contains '/'", int{l.lineNo()}, ConstCharPtr{l.key()}, ConstCharPtr{optdep.c_str()});
+								throw Error("Config line %d: bad %s: optional dependency `%s` contains '/'", l.lineNo(), l.key().cp(), optdep.c_str());
 							}
 
 							ctx_addOptDependsByPackageName[package].push_back({.configLineNo = l.lineNo(), .optDepName = alloc::String{ctx_mm, optdep}});
 							if (ctx_verbosity >= Verbosity_Debug) {
-								ctx_log.debug(
-									"Config line %d: add optional dependency `%s` to package `%s`",
-									int{l.lineNo()}, ConstCharPtr{optdep.c_str()}, ConstCharPtr{package.c_str()}
-								);
+								ctx_log.debug( "Config line %d: add optional dependency `%s` to package `%s`", l.lineNo(), optdep.c_str(), package.c_str());
 							}
 
 						} else if (l.key() == "addLibPath") {
@@ -375,7 +371,7 @@ int main(int argc, char* argv[]) {
 		ThreadPool ctx_threadPool {0, [&](const char* taskExceptionMessage) {
 			// Called asynchronously (it's ok, Log synchronizes its output) for all exceptions except Abort (it's ok too).
 			if (taskExceptionMessage != nullptr || *taskExceptionMessage != '\0') {
-				ctx_log.error("%s", ConstCharPtr{taskExceptionMessage});
+				ctx_log.error("%s", taskExceptionMessage);
 			}
 		}};
 
@@ -418,7 +414,7 @@ int main(int argc, char* argv[]) {
 				if (auto it = data.packagesByName.find(pName);  it != data.packagesByName.end()) {
 					ctx.addLibPathsByPackage.insert({it->second, std::move(addLibs)});
 				} else if (ctx.verbosity >= Verbosity_WarnAndExec) {
-					ctx.log.warn("Config file references non-installed package '%s'.", ConstCharPtr{pName});
+					ctx.log.warn("Config file references non-installed package '%s'.", pName.cp());
 				}
 			}
 			for (auto& [pName, addOptDepends] : ctx_addOptDependsByPackageName) {
@@ -429,20 +425,20 @@ int main(int argc, char* argv[]) {
 							if (ctx.verbosity >= Verbosity_Debug) {
 								ctx.log.debug(
 									FILE_LINE "add optional dependency `%s` to package `%s` from config file line %d.",
-									ConstCharPtr{optdep.optDepName}, ConstCharPtr{pName.c_str()}, int{optdep.configLineNo}
+									optdep.optDepName.cp(), pName.c_str(), optdep.configLineNo
 								);
 							}
 						} else {
 							if (ctx.verbosity >= Verbosity_WarnAndExec) {
 								ctx.log.warn(
 									FILE_LINE "skip optional dependency `%s` to package `%s` from config file line %d: already added",
-									ConstCharPtr{optdep.optDepName}, ConstCharPtr{pName.c_str()}, int{optdep.configLineNo}
+									optdep.optDepName.cp(), pName.c_str(), optdep.configLineNo
 								);
 							}
 						}
 					}
 				} else if (ctx.verbosity >= Verbosity_WarnAndExec) {
-					ctx.log.warn("Config file references non-installed package '%s'.", ConstCharPtr{pName.c_str()});
+					ctx.log.warn("Config file references non-installed package '%s'.", pName.c_str());
 				}
 			}
 			ctx_addLibPathsByPackageName.clear();
@@ -480,7 +476,7 @@ int main(int argc, char* argv[]) {
 	} catch (Abort& e) {
 		return ExitStatus_Error;
 	} catch (std::exception& e) {
-		ctx_log.error("%s", ConstCharPtr{e.what()});
+		ctx_log.error("%s", e.what());
 		return ExitStatus_Error;
 	}
 }

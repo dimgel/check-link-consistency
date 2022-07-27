@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include "Error.h"
 #include "Finally.h"
-#include "SplitMutableString.h"
 #include "StdCapture.h"
 #include "util.h"
 
@@ -60,7 +59,7 @@ namespace dimgel::util {
 		} else if (errno == ENOENT) {
 			return false;
 		} else {
-			throw Error(FILE_LINE "::realpath(`%s`) failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "::realpath(`%s`) failed: %s", path, strerror(errno));
 		}
 	}
 
@@ -100,7 +99,7 @@ namespace dimgel::util {
 					// Process "/../" or trailing "/..".
 					if (bi < 2) {
 						// We are parsing first path component, it cannot be "..".
-						throw Error(FILE_LINE "normalizePath(`%s`): path beyond root", ConstCharPtr{path});
+						throw Error(FILE_LINE "normalizePath(`%s`): path beyond root", path);
 					}
 					// Point bi at '/' after previous path component.
 					bi--;
@@ -153,10 +152,10 @@ namespace dimgel::util {
 		struct statx st;
 		constexpr decltype(st.stx_mask) mask = STATX_TYPE | STATX_MODE | STATX_INO;
 		if (::statx(AT_FDCWD, path, AT_NO_AUTOMOUNT | AT_SYMLINK_NOFOLLOW, mask, &st) == -1) {
-			throw Error(FILE_LINE "::statx(`%s`) failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "::statx(`%s`) failed: %s", path, strerror(errno));
 		}
 		if ((st.stx_mask & mask) != mask) {
-			throw Error(FILE_LINE "::statx(`%s`) returned incomplete data; unsupported filesystem?", ConstCharPtr{path});
+			throw Error(FILE_LINE "::statx(`%s`) returned incomplete data; unsupported filesystem?", path);
 		}
 		return {.mode = st.stx_mode, .inode = st.stx_ino};
 	}
@@ -169,7 +168,7 @@ namespace dimgel::util {
 				// Not found -- it's OK.
 				return;
 			} else {
-				throw Error(FILE_LINE "::opendir(`%s`) failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+				throw Error(FILE_LINE "::opendir(`%s`) failed: %s", path, strerror(errno));
 			}
 		}
 
@@ -187,7 +186,7 @@ namespace dimgel::util {
 				// Since I don't want additional statx() syscall on each direntry, there's no reason to continue.
 				throw Error(
 					FILE_LINE "Could not read directory `%s`: unsupported filesystem: got direntry `%s` with d_type = DT_UNKNOWN",
-					ConstCharPtr{path}, ConstCharPtr{de->d_name}
+					path, de->d_name
 				);
 			}
 			callback(*de);
@@ -199,14 +198,14 @@ namespace dimgel::util {
 	BufAndRef readFile(const char* path) {
 		Closeable fd {open(path, O_RDONLY)};
 		if (fd < 0) {
-			throw Error(FILE_LINE "readFile(`%s`): open() failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "readFile(`%s`): open() failed: %s", path, strerror(errno));
 		}
 		auto ssize = lseek(fd, 0, SEEK_END);
 		if (ssize < 0) {
-			throw Error(FILE_LINE "readFile(`%s`): lseek() failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "readFile(`%s`): lseek() failed: %s", path, strerror(errno));
 		}
 		if (lseek(fd, 0, SEEK_SET) < 0) {
-			throw Error(FILE_LINE "readFile(`%s`): lseek() failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "readFile(`%s`): lseek() failed: %s", path, strerror(errno));
 		}
 
 		size_t size = (size_t)ssize;
@@ -215,10 +214,10 @@ namespace dimgel::util {
 
 		auto n = read(fd, s, size);
 		if (n < 0) {
-			throw Error(FILE_LINE "readFile(`%s`): read() failed: %s", ConstCharPtr{path}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "readFile(`%s`): read() failed: %s", path, strerror(errno));
 		}
 		if ((size_t)n != size) {
-			throw Error(FILE_LINE "readFile(`%s`): read wrong number of bytes", ConstCharPtr{path});
+			throw Error(FILE_LINE "readFile(`%s`): read wrong number of bytes", path);
 		}
 		s[size] = '\0';
 
@@ -229,25 +228,25 @@ namespace dimgel::util {
 	int forkExec(const char* argv[], bool requireStatus0) {
 		int pid = fork();
 		if (pid == -1) {
-			throw Error("fork() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error("fork() failed: %s", strerror(errno));
 		}
 		if (pid == 0) {
 			// const_cast is OK: https://stackoverflow.com/a/190208
 			execv(argv[0], const_cast<char**>(argv));
-			throw Error("exec(`%s`) failed: %s", ConstCharPtr{argv[0]}, ConstCharPtr{strerror(errno)});
+			throw Error("exec(`%s`) failed: %s", argv[0], strerror(errno));
 		}
 		int wstatus;
 		int x = waitpid(pid, &wstatus, 0);
 		if (x == -1) {
-			throw Error("waitpid() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error("waitpid() failed: %s", strerror(errno));
 		}
 		if (!WIFEXITED(wstatus)) {
 			// `man 2 wait`: "By default, waitpid() waits only for terminated children"
-			throw Error("`%s` aborted", ConstCharPtr{argv[0]});
+			throw Error("`%s` aborted", argv[0]);
 		}
 		int status = WEXITSTATUS(wstatus);
 		if ((requireStatus0 && status != 0)) {
-			throw Error("`%s` exited with status %d", ConstCharPtr{argv[0]}, int{status});
+			throw Error("`%s` exited with status %d", argv[0], status);
 		}
 		return status;
 	}
@@ -259,7 +258,7 @@ namespace dimgel::util {
 
 		int pid = fork();
 		if (pid == -1) {
-			throw Error("fork() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error("fork() failed: %s", strerror(errno));
 		}
 
 		if (pid == 0) {
@@ -269,7 +268,7 @@ namespace dimgel::util {
 			// ATTENTION!!! Capture IS NOT destroyed here, because destructor restores child's stdout & stderr.
 			// const_cast is OK: https://stackoverflow.com/a/190208
 			execv(argv[0], const_cast<char**>(argv));
-			throw Error("exec(`%s`) failed: %s", ConstCharPtr{argv[0]}, ConstCharPtr{strerror(errno)});
+			throw Error("exec(`%s`) failed: %s", argv[0], strerror(errno));
 		}
 
 		if (captureStdOut) captureStdOut->initParentProcess();
@@ -288,7 +287,7 @@ namespace dimgel::util {
 			int wstatus;
 			int x = waitpid(pid, &wstatus, WNOHANG);
 			if (x == -1) {
-				throw Error("waitpid() failed: %s", ConstCharPtr{strerror(errno)});
+				throw Error("waitpid() failed: %s", strerror(errno));
 			}
 			if (x == 0) {
 				// WNOHANG was given, no status changes.
@@ -297,13 +296,13 @@ namespace dimgel::util {
 			if (WIFEXITED(wstatus)) {
 				result.status = WEXITSTATUS(wstatus);
 				if ((p.requireStatus0 && result.status != 0)) {
-					throw Error("`%s` exited with status %d", ConstCharPtr{argv[0]}, int{result.status});
+					throw Error("`%s` exited with status %d", argv[0], result.status);
 				} else {
 					break;
 				}
 			}
 			if (WIFSIGNALED(wstatus) || WIFSTOPPED(wstatus)) {
-				throw Error("`%s` aborted", ConstCharPtr{argv[0]});
+				throw Error("`%s` aborted", argv[0]);
 			}
 
 			usleep(1000);   // 1ms (in microseconds).

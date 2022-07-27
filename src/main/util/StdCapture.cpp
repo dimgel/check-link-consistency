@@ -14,7 +14,7 @@ namespace dimgel {
 		// `man 7 pipe`: pipe capacity is 65536 bytes. Pretty enough for me.
 		int pipeFDs[2];
 		if (::pipe(pipeFDs) == -1) {
-			throw Error(FILE_LINE "pipe() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "pipe() failed: %s", strerror(errno));
 		}
 		read = pipeFDs[0];
 		write = pipeFDs[1];
@@ -22,11 +22,11 @@ namespace dimgel {
 		// https://stackoverflow.com/a/1549344/4247442
 		int flags = fcntl(read, F_GETFL, 0);
 		if (flags == -1) {
-			throw Error(FILE_LINE "fcntl(F_GETFL) failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "fcntl(F_GETFL) failed: %s", strerror(errno));
 		}
 		flags |= O_NONBLOCK;
 		if (fcntl(read, F_SETFL, flags) == -1) {
-			throw Error(FILE_LINE "fcntl(F_SETFL) failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "fcntl(F_SETFL) failed: %s", strerror(errno));
 		}
 
 		if (!forForkExec) {
@@ -60,10 +60,10 @@ namespace dimgel {
 		fflush(f);
 
 		if ((oldWrite = dup(fd)) == -1) {
-			throw Error(FILE_LINE "dup() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "dup() failed: %s", strerror(errno));
 		}
 		if (dup2(write, fd) == -1) {
-			throw Error(FILE_LINE "dup2() failed: %s", ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "dup2() failed: %s", strerror(errno));
 		}
 		write.close();
 	}
@@ -105,7 +105,7 @@ namespace dimgel {
 					// This may come at first loop iteration if there's no input at all.
 					break;
 				}
-				throw Error(FILE_LINE "read() failed: %s", ConstCharPtr{strerror(errno)});
+				throw Error(FILE_LINE "read() failed: %s", strerror(errno));
 			}
 			os << std::string_view(buf, n);
 			if (n < bufSize) {

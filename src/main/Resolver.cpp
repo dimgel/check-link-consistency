@@ -2,7 +2,6 @@
 #include <mutex>
 #include <optional>
 #include <sstream>
-#include "ELFInspector.h"
 #include "Resolver.h"
 #include "util/Log.h"
 #include "util/ThreadPool.h"
@@ -39,24 +38,20 @@ namespace dimgel {
 						}
 						File* f2 = it2->second;
 						if (f2 == &f) {
-							log.error(FILE_LINE "`/%s`: ignored needed lib `%s` ---> resolved to itself", ConstCharPtr{f.path1}, ConstCharPtr{name});
+							log.error(FILE_LINE "`/%s`: ignored needed lib `%s` ---> resolved to itself", f.path1.cp(), name.cp());
 							it = f.neededLibs.erase(it);
 							return true;
 						}
 						if (!f2->isDynamicELF || !f2->isLib) {
 							log.error(
 								FILE_LINE "`/%s`: ignored needed lib `%s` ---> `/%s` (%s): not a %s",
-								ConstCharPtr{f.path1}, ConstCharPtr{name}, ConstCharPtr{f2->path1}, ConstCharPtr{description},
-								(f2->isDynamicELF ? "library" : "dynamic ELF")
+								f.path1.cp(), name.cp(), f2->path1.cp(), description, (f2->isDynamicELF ? "library" : "dynamic ELF")
 							);
 							it = f.neededLibs.erase(it);
 							return true;
 						}
 						if (verbosity >= Verbosity_Debug) {
-							log.debug(
-								FILE_LINE "`/%s`: resolved needed lib `%s` ---> `/%s` (%s)",
-								ConstCharPtr{f.path1}, ConstCharPtr{name}, ConstCharPtr{f2->path1}, ConstCharPtr{description}
-							);
+							log.debug(FILE_LINE "`/%s`: resolved needed lib `%s` ---> `/%s` (%s)", f.path1.cp(), name.cp(), f2->path1.cp(), description);
 						}
 						it = f.neededLibs.erase(it);
 						return true;
@@ -89,7 +84,7 @@ namespace dimgel {
 					}
 
 					if (verbosity >= Verbosity_Debug) {
-						log.debug(FILE_LINE "`/%s`: needed lib not found: `%s`", ConstCharPtr{f.path1}, ConstCharPtr{name});
+						log.debug(FILE_LINE "`/%s`: needed lib not found: `%s`", f.path1.cp(), name.cp());
 					}
 					++it;
 				} // for (auto it = f.neededLibs.begin();  ...)
@@ -222,9 +217,9 @@ namespace dimgel {
 			line1();
 			ctx.log.error(
 				"%*s   %*s   %*s",
-				(int)(-lengthP),  ConstCharPtr{titleP},
-				(int)(-lengthF),  ConstCharPtr{titleF},
-				(int)(-lengthNL),  ConstCharPtr{titleNL}
+				(int)(-lengthP),  titleP.cp(),
+				(int)(-lengthF),  titleF.cp(),
+				(int)(-lengthNL),  titleNL.cp()
 			);
 			line1();
 			bool colorP;
@@ -242,15 +237,15 @@ namespace dimgel {
 						ctx.log.error(
 							"%s%*s%s   %s/%*s%s   %*s",
 
-							ConstCharPtr{colorP ? c.white.cp() : ""},
-							(int)(-lengthP),  ConstCharPtr{p != nullptr ? pNameVer : unassignedP.cp()},
-							ConstCharPtr{colorP ? c.off.cp() : ""},
+							colorP ? c.white.cp() : "",
+							(int)(-lengthP),  p != nullptr ? pNameVer : unassignedP.cp(),
+							colorP ? c.off.cp() : "",
 
-							ConstCharPtr{colorF ? c.white.cp() : ""},
-							(int)(-(lengthF - 1)),  ConstCharPtr{f->path1},
-							ConstCharPtr{colorF ? c.off.cp() : ""},
+							colorF ? c.white.cp() : "",
+							(int)(-(lengthF - 1)),  f->path1.cp(),
+							colorF ? c.off.cp() : "",
 
-							(int)(-lengthNL),  ConstCharPtr{nl}
+							(int)(-lengthNL),  nl.cp()
 						);
 						colorP = false;
 						colorF = false;
@@ -263,14 +258,14 @@ namespace dimgel {
 
 			for (Package* p : packagesSorted) {
 				if (p != nullptr) {
-					ctx.log.error("Package: %s %s", ConstCharPtr{p->name}, ConstCharPtr{p->version});
+					ctx.log.error("Package: %s %s", p->name.cp(), p->version.cp());
 				} else {
-					ctx.log.error(ConstCharPtr{unassignedP});
+					ctx.log.error("%s", unassignedP.cp());
 				}
 				for (File* f : packages[p]) {
-					ctx.log.error("    File: /%s", ConstCharPtr{f->path1});
+					ctx.log.error("    File: /%s", f->path1.cp());
 					for (auto& nl : neededLibsSorted[f]) {
-						ctx.log.error("        Unresolved needed lib: %s", ConstCharPtr{nl});
+						ctx.log.error("        Unresolved needed lib: %s", nl.cp());
 					}
 				}
 			}

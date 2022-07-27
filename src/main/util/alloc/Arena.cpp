@@ -115,7 +115,7 @@ namespace dimgel::alloc {
 		size_t totalK = (totalB + 1023) / 1024;
 		m.debug(
 			FILE_LINE "stats: Arena(%s): pageSize %lu B (>=%lu KiB), numCurPages %d, numFreePages %d, used %lu B (<=%lu KiB) on last page / %lu B (<=%lu KiB) total",
-			ConstCharPtr{instanceName}, ulong{pageSizeB}, ulong{pageSizeK}, int{numCurPages}, int{numFreePages}, ulong{lastB}, ulong{lastK}, ulong{totalB}, ulong{totalK}
+			instanceName, ulong{pageSizeB}, ulong{pageSizeK}, int{numCurPages}, int{numFreePages}, ulong{lastB}, ulong{lastK}, ulong{totalB}, ulong{totalK}
 		);
 	}
 }

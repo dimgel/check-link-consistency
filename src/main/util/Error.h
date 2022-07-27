@@ -9,6 +9,7 @@ namespace dimgel {
 	// For message without parameters, throw std::runtime_error() itself.
 	class Error : public std::runtime_error {
 	public:
-		Error(const char* format, ...);
+		// __attribute__(): format arg is 2 because arg 1 is `this`.
+		Error(const char* format, ...) __attribute__((format(printf, 2, 3)));
 	};
 }

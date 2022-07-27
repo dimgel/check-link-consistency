@@ -26,7 +26,7 @@ namespace dimgel {
 				util::trimInplace(k);
 			}
 			if (k.empty()) {
-				throw Error("Wrong syntax @ line %d: expect key=value", int{lineNo});
+				throw Error("Wrong syntax @ line %d: expect key=value", lineNo);
 			}
 			v = sv.substr(iEq + 1);
 			util::trimInplace(v);
@@ -38,7 +38,7 @@ namespace dimgel {
 			auto vr = StringRef::createUnsafe(v);
 
 			if (!onLine({kr, vr, lineNo})) {
-				throw Error("Unknown key `%s` @ line %d", ConstCharPtr{kr}, int{lineNo});
+				throw Error("Unknown key `%s` @ line %d", kr.cp(), lineNo);
 			}
 		}
 	}
@@ -51,7 +51,7 @@ namespace dimgel {
 
 		// Note: value is already trimmed, so I can check for errors & incomplete parsing short way:
 		if ((x == 0 && v != "0") || *end != '\0') {
-			throw Error("Value of `%s` must integer at line %d", ConstCharPtr{k}, int{l});
+			throw Error("Value of `%s` must integer @ line %d", k.cp(), l);
 		}
 		return x;
 	}
@@ -60,7 +60,7 @@ namespace dimgel {
 	bool IniParser::Line::Value::asBool() const {
 		bool x = v == "true";
 		if (!x && v != "false") {
-			throw Error("Value of `%s` must be boolean (true|false) at line %d", ConstCharPtr{k}, int{l});
+			throw Error("Value of `%s` must be boolean (true|false) at line %d", k.cp(), l);
 		}
 		return x;
 	}

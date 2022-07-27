@@ -19,16 +19,6 @@
 #define LINE STRINGIZE(__LINE__)
 
 
-namespace dimgel {
-
-	// For non-narrowing type casts -- to make sure vararg Log parameters are of correct type.
-	// Usage: ConstCharPtr{x}
-	// This does not compile: const char*{x}
-	// This produces -Wpedantic: "ISO C++ forbids compound-literals": (const char*){x}
-	using ConstCharPtr = const char*;
-}
-
-
 namespace dimgel::util {
 
 	// std::initializer_list PROBABLY does not use heap memory: https://stackoverflow.com/questions/61825532

@@ -9,10 +9,10 @@ static void f1(int lineNo, const std::string& source, const std::string& expecte
 	char buf[PATH_MAX];
 	auto size = util::normalizePath(source.c_str(), buf);
 	if (buf != expected) {
-		throw Error("Assertion failed @ line %d: buf \"%s\" != expected \"%s\"", int{lineNo}, ConstCharPtr{source.c_str()}, ConstCharPtr{expected.c_str()});
+		throw Error("Assertion failed @ line %d: buf \"%s\" != expected \"%s\"", lineNo, source.c_str(), expected.c_str());
 	}
 	if (size != expected.length()) {
-		throw Error("Assertion failed @ line %d: size %lu != expected %lu", int{lineNo}, ulong{size}, ulong{expected.length()});
+		throw Error("Assertion failed @ line %d: size %lu != expected %lu", lineNo, ulong{size}, ulong{expected.length()});
 	}
 };
 

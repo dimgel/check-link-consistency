@@ -35,28 +35,25 @@ namespace dimgel {
 
 			void merge() override {
 				if (result.p->name.empty()) {
-					throw Error(FILE_LINE "read `%s`: empty package name", ConstCharPtr{installedPackageUniqueID.c_str()});
+					throw Error(FILE_LINE "read `%s`: empty package name", installedPackageUniqueID.c_str());
 				}
 				if (result.p->version.empty()) {
-					throw Error(FILE_LINE "read `%s`: empty package version", ConstCharPtr{installedPackageUniqueID.c_str()});
+					throw Error(FILE_LINE "read `%s`: empty package version", installedPackageUniqueID.c_str());
 				}
 //				if (!std::regex_match(result.p->name, rPackageName)) {
-//					throw Error(FILE_LINE "read `%s`: invalid package name", {installedPackageUniqueID.c_str()});
+//					throw Error(FILE_LINE "read `%s`: invalid package name", installedPackageUniqueID.c_str());
 //				}
 //				if (!std::regex_match(result.p->version, rPackageVersion)) {
-//					throw Error(FILE_LINE "read `%s`: invalid package version", ConstCharPtr{installedPackageUniqueID.c_str()});
+//					throw Error(FILE_LINE "read `%s`: invalid package version", installedPackageUniqueID.c_str());
 //				}
 
 				if (owner.ctx.verbosity >= Verbosity_Debug) {
-					owner.ctx.log.debug(
-						FILE_LINE "read `%s`: package `%s %s`",
-						ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{result.p->name}, ConstCharPtr{result.p->version}
-					);
+					owner.ctx.log.debug(FILE_LINE "read `%s`: package `%s %s`", installedPackageUniqueID.c_str(), result.p->name.cp(), result.p->version.cp());
 					for (auto& s : result.p->provides) {
-						owner.ctx.log.debug(FILE_LINE "read `%s`: provides `%s`", ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s});
+						owner.ctx.log.debug(FILE_LINE "read `%s`: provides `%s`", installedPackageUniqueID.c_str(), s.cp());
 					}
 					for (auto& s : result.p->optDepends) {
-						owner.ctx.log.debug(FILE_LINE "read `%s`: optDepends `%s`", ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s});
+						owner.ctx.log.debug(FILE_LINE "read `%s`: optDepends `%s`", installedPackageUniqueID.c_str(), s.cp());
 					}
 				}
 
@@ -64,7 +61,7 @@ namespace dimgel {
 					auto p0 = t2.first->second;
 					throw Error(
 						FILE_LINE "read `%s`: another installed package has same name: `%s %s`",
-						ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{p0->name}, ConstCharPtr{p0->version}
+						installedPackageUniqueID.c_str(), p0->name.cp(), p0->version.cp()
 					);
 				}
 
@@ -75,7 +72,7 @@ namespace dimgel {
 						auto p0 = t2.first->second;
 						owner.ctx.log.debug(
 							FILE_LINE "read `%s`: another installed package already provides `%s`: `%s %s`",
-							ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s}, ConstCharPtr{p0->name}, ConstCharPtr{p0->version}
+							installedPackageUniqueID.c_str(), s.cp(), p0->name.cp(), p0->version.cp()
 						);
 					}
 				};
@@ -91,11 +88,11 @@ namespace dimgel {
 						auto p0 = t2.first->second;
 						throw Error(
 							FILE_LINE "read `%s`: another installed package already owns file `%s`: `%s %s`",
-							ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s}, ConstCharPtr{p0->name}, ConstCharPtr{p0->version}
+							installedPackageUniqueID.c_str(), s.cp(), p0->name.cp(), p0->version.cp()
 						);
 					}
 					if (owner.ctx.verbosity >= Verbosity_Debug) {
-						owner.ctx.log.debug(FILE_LINE "read `%s`: owns file `%s`", ConstCharPtr{installedPackageUniqueID.c_str()}, ConstCharPtr{s});
+						owner.ctx.log.debug(FILE_LINE "read `%s`: owns file `%s`", installedPackageUniqueID.c_str(), s.cp());
 					}
 				}
 			}
@@ -138,7 +135,7 @@ namespace dimgel {
 				if (data.archiveNamesByOptDepend.insert({optdep, {}}).second && ctx.verbosity >= Verbosity_Debug) {
 					ctx.log.debug(
 						FILE_LINE "add optional dependency `%s` for package `%s %s`",
-						ConstCharPtr{optdep}, ConstCharPtr{f->belongsToPackage->name}, ConstCharPtr{f->belongsToPackage->version}
+						optdep.cp(), f->belongsToPackage->name.cp(), f->belongsToPackage->version.cp()
 					);
 				}
 			}
@@ -189,7 +186,7 @@ namespace dimgel {
 		if (onFileIsNeeded_impl(StringRef{symlinkPath1})) {
 			neededSymlinks.insert(alloc::String{owner.ctx.mm, symlinkPath1});
 			if (owner.ctx.verbosity >= Verbosity_Debug) {
-				owner.ctx.log.debug(FILE_LINE "read `%s`: symlink.addNeeded: `/%s`", ConstCharPtr{archiveName}, ConstCharPtr{symlinkPath1});
+				owner.ctx.log.debug(FILE_LINE "read `%s`: symlink.addNeeded: `/%s`", archiveName.cp(), symlinkPath1);
 			}
 		}
 
@@ -207,10 +204,7 @@ namespace dimgel {
 
 		if (owner.ctx.verbosity >= Verbosity_Debug) {
 			// normalizedPath1 may be path to another symlink. Don't resolve to regular file until all symlinks are obtained; see onSymlinksDone().
-			owner.ctx.log.debug(
-				FILE_LINE "read `%s`: symlink.add: `/%s` ---> `%s` ---> `/%s`",
-				ConstCharPtr{archiveName}, ConstCharPtr{symlinkPath1}, ConstCharPtr{resolvedPath}, ConstCharPtr{normalizedPath1}
-			);
+			owner.ctx.log.debug(FILE_LINE "read `%s`: symlink.add: `/%s` ---> `%s` ---> `/%s`", archiveName.cp(), symlinkPath1, resolvedPath, normalizedPath1.cp());
 		}
 		// Store symlink even if it's not needed itself: some needed (including yet unmet) symlink may resolve to it, so I might need it in onSymlinksDone().
 		resolvedPath1BySymlinkPath1.insert({alloc::String{owner.ctx.mm, symlinkPath1}, normalizedPath1});
@@ -234,10 +228,7 @@ namespace dimgel {
 			}
 
 			if (owner.ctx.verbosity >= Verbosity_Debug) {
-				owner.ctx.log.debug(
-					FILE_LINE "read `%s`: symlink.neededToFile: `/%s` ---> `/%s`",
-					ConstCharPtr{archiveName}, ConstCharPtr{symlinkPath1}, ConstCharPtr{regularPath1}
-				);
+				owner.ctx.log.debug(FILE_LINE "read `%s`: symlink.neededToFile: `/%s` ---> `/%s`", archiveName.cp(), symlinkPath1.cp(), regularPath1.cp());
 			}
 			neededSymlinksByFilePath1[regularPath1].insert(symlinkPath1);
 		}
@@ -261,7 +252,7 @@ namespace dimgel {
 
 	void PacMan::ParseArchiveTask::onFileContents(const char* filePath1, char* buf, size_t size) {
 		if (owner.ctx.verbosity >= Verbosity_Debug) {
-			owner.ctx.log.debug(FILE_LINE "read `%s`: neededFile.inspect `/%s`", ConstCharPtr{archiveName}, ConstCharPtr{filePath1});
+			owner.ctx.log.debug(FILE_LINE "read `%s`: neededFile.inspect `/%s`", archiveName.cp(), filePath1);
 		}
 
 		File* f = File::create(owner.ctx.mm);
@@ -269,7 +260,7 @@ namespace dimgel {
 		owner.elfInspector.processOne_fromArchive(*f, buf, size);
 		if (!f->isLib) {
 			if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-				owner.ctx.log.warn(FILE_LINE "read `%s`: neededFile.notLibrary `/%s`", ConstCharPtr{archiveName}, ConstCharPtr{filePath1});
+				owner.ctx.log.warn(FILE_LINE "read `%s`: neededFile.notLibrary `/%s`", archiveName.cp(), filePath1);
 			}
 			return;
 		}
@@ -279,14 +270,14 @@ namespace dimgel {
 				if (owner.ctx.verbosity >= Verbosity_Debug) {
 					owner.ctx.log.debug(
 						FILE_LINE "read `%s`: libs.add {`%s`, %s-bit} ---> `%s`",
-						ConstCharPtr{archiveName}, ConstCharPtr{path1}, (f->is32 ? "32" : "64"), ConstCharPtr{f->path1}
+						archiveName.cp(), path1.cp(), (f->is32 ? "32" : "64"), f->path1.cp()
 					);
 				}
 			} else {
 				if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
 					owner.ctx.log.warn(
 						FILE_LINE "read `%s`: libs.error {`%s`, %s-bit}: duplicate key, ignoring",
-						ConstCharPtr{archiveName}, ConstCharPtr{path1}, (f->is32 ? "32" : "64")
+						archiveName.cp(), path1.cp(), (f->is32 ? "32" : "64")
 					);
 				}
 			}
@@ -312,13 +303,13 @@ namespace dimgel {
 			impl(p);
 			if (p->name.empty()) {
 				if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-					owner.ctx.log.warn(FILE_LINE "ignore `%s`: empty package name", ConstCharPtr{archiveName});
+					owner.ctx.log.warn(FILE_LINE "ignore `%s`: empty package name", archiveName.cp());
 				}
 				throw Abort();
 			}
 			if (p->version.empty()) {
 				if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-					owner.ctx.log.error(FILE_LINE "ignore `%s`: empty package version", ConstCharPtr{archiveName});
+					owner.ctx.log.error(FILE_LINE "ignore `%s`: empty package version", archiveName.cp());
 				}
 				throw Abort();
 			}
@@ -328,22 +319,22 @@ namespace dimgel {
 			if (p->name != optDepName && !p->provides.contains(optDepName)) {
 				if (owner.ctx.verbosity >= Verbosity_Debug) {
 					owner.ctx.log.debug(FILE_LINE "read `%s`: neither package name nor any of its `provides` entries match optDependName `%s`",
-						ConstCharPtr{archiveName}, ConstCharPtr{optDepName}
+						archiveName.cp(), optDepName.cp()
 					);
 				}
 			}
 
 			if (owner.ctx.verbosity >= Verbosity_Debug) {
-				owner.ctx.log.debug(FILE_LINE "read `%s`: package `%s %s`", ConstCharPtr{archiveName}, ConstCharPtr{p->name}, ConstCharPtr{p->version});
+				owner.ctx.log.debug(FILE_LINE "read `%s`: package `%s %s`", archiveName.cp(), p->name.cp(), p->version.cp());
 				for (auto& s : p->provides) {
-					owner.ctx.log.debug(FILE_LINE "read `%s`: provides `%s`", ConstCharPtr{archiveName}, ConstCharPtr{s});
+					owner.ctx.log.debug(FILE_LINE "read `%s`: provides `%s`", archiveName.cp(), s.cp());
 				}
 			}
 		} catch (Abort& e) {
 			p = nullptr;
 		} catch (std::exception& e) {
 			if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-				owner.ctx.log.warn(FILE_LINE "ignore `%s`: %s", ConstCharPtr{optDepName}, ConstCharPtr{e.what()});
+				owner.ctx.log.warn(FILE_LINE "ignore `%s`: %s", optDepName.cp(), e.what());
 			}
 			p = nullptr;
 		}
@@ -363,7 +354,7 @@ namespace dimgel {
 			if (!owner.data.libs.insert({pathAndBitness, f}).second && owner.ctx.verbosity >= Verbosity_WarnAndExec) {
 				owner.ctx.log.warn(
 					FILE_LINE "read `%s`: libs.error {`%s`, %s-bit}: duplicate key, ignoring",
-					ConstCharPtr{archiveName}, ConstCharPtr{f->path1}, (f->is32 ? "32" : "64")
+					archiveName.cp(), f->path1.cp(), (f->is32 ? "32" : "64")
 				);
 			}
 		}

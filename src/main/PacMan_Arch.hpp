@@ -47,7 +47,7 @@ namespace dimgel {
 		auto openFile = [&](const char* fileName, char filePathBuf[PATH_MAX]) {
 			auto filePath = util::concatStringViews(filePathBuf, PATH_MAX, {dirPath.sv(), "/", fileName});
 			if (!fs::is_regular_file(filePath.sv())) {
-				throw Error(FILE_LINE "read `%s`: not a regular file", ConstCharPtr{filePathBuf});
+				throw Error(FILE_LINE "read `%s`: not a regular file", filePathBuf);
 			}
 			auto contents = util::readFile(filePath.cp());
 			return openFile_Result{.path = filePath, .contents = std::move(contents)};
@@ -60,16 +60,16 @@ namespace dimgel {
 
 			auto getLine = [&](SplitMutableString::ConstIterator& it) {
 				if (it == it.getOwner().end()) {
-					throw Error(FILE_LINE "read `%s` line %d: unexpected EOF", ConstCharPtr{filePathBuf}, int{it.getPartNo()});
+					throw Error(FILE_LINE "read `%s` line %d: unexpected EOF", filePathBuf, it.getPartNo());
 				}
 				return *it++;
 			};
 			auto skipEmptyLine = [&](SplitMutableString::ConstIterator& it) {
 				if (it == it.getOwner().end()) {
-					throw Error(FILE_LINE "read `%s` line %d: expected empty line, got EOF", ConstCharPtr{filePathBuf}, int{it.getPartNo()});
+					throw Error(FILE_LINE "read `%s` line %d: expected empty line, got EOF", filePathBuf, it.getPartNo());
 				}
 				if (!it->empty()) {
-					throw Error(FILE_LINE "read `%s` line %d: expected empty line", ConstCharPtr{filePathBuf}, int{it.getPartNo()});
+					throw Error(FILE_LINE "read `%s` line %d: expected empty line", filePathBuf, it.getPartNo());
 				}
 				++it;
 			};
@@ -106,7 +106,7 @@ namespace dimgel {
 						// Skip unknown section, make sure it also ends with empty line.
 					}
 				} else {
-					throw Error(FILE_LINE "read `%s` line %d: expected %%SECTION_NAME%%", ConstCharPtr{filePathBuf}, int{it.getPartNo() - 1});
+					throw Error(FILE_LINE "read `%s` line %d: expected %%SECTION_NAME%%", filePathBuf, it.getPartNo() - 1);
 				}
 			}
 		};
@@ -119,7 +119,7 @@ namespace dimgel {
 
 		char packageNameVer[200];
 		if (util::concatStringViews(packageNameVer, sizeof(packageNameVer), {result.p->name.sv(), "-", result.p->version.s()}) != dirName) {
-			throw Error(FILE_LINE "read `%s`: sanity check failed: package.name + '-' + package.version != dirName", ConstCharPtr{dirPath});
+			throw Error(FILE_LINE "read `%s`: sanity check failed: package.name + '-' + package.version != dirName", dirPath.cp());
 		}
 
 		return result;
@@ -135,7 +135,7 @@ namespace dimgel {
 		if (!ctx.noNetwork) {
 			long argsMaxLength {sysconf(_SC_ARG_MAX) - 2048};
 			if (argsMaxLength < 0) {
-				throw Error(FILE_LINE "sysconf() failed: %s", ConstCharPtr{strerror(errno)});
+				throw Error(FILE_LINE "sysconf() failed: %s", strerror(errno));
 			}
 			std::vector<const char*> argv;
 			argv.reserve(data.optDependsSorted.size());
@@ -168,7 +168,7 @@ namespace dimgel {
 						for (size_t i = 1;  i < argv.size() - 1;  i++) {
 							os << ' ' << argv[i];
 						}
-						ctx.log.exec("%s", ConstCharPtr{os.str().c_str()});
+						ctx.log.exec("%s", os.str().c_str());
 					}
 				}
 
@@ -181,7 +181,7 @@ namespace dimgel {
 						FILE_LINE "exec(pacman -Sw) failed: %s"
 								"\n      Check IgnorePkg in /etc/pacman.conf."
 								"\n      Aborting: downloaded archives can be damaged.",
-						ConstCharPtr{e.what()}
+						e.what()
 					);
 				}
 			} // for (... packages.packagesByOptDepend ...)
@@ -212,13 +212,13 @@ namespace dimgel {
 					nullptr
 				};
 				if (owner.ctx.verbosity >= Verbosity_WarnAndExec) {
-					owner.ctx.log.exec("/usr/bin/pacman -Sw %s --print-format '%%n %%l' %s", ConstCharPtr{argvColor}, ConstCharPtr{optDepName});
+					owner.ctx.log.exec("/usr/bin/pacman -Sw %s --print-format '%%n %%l' %s", argvColor, optDepName.cp());
 				}
 				util::forkExecStdCapture_Result x;
 				try {
 					x = util::forkExecStdCapture(argv, {.requireStatus0 = true, .captureStdOut = true, .captureStdErr = false});
 				} catch (std::exception& e) {
-					owner.ctx.log.error("skipping optional dependency `%s`: exec() failed: %s", ConstCharPtr{optDepName}, ConstCharPtr{e.what()});
+					owner.ctx.log.error("skipping optional dependency `%s`: exec() failed: %s", optDepName.cp(), e.what());
 					return;
 				}
 
@@ -229,7 +229,7 @@ namespace dimgel {
 				auto it = lines.begin();
 				for (;  it != lines.end();  ++it) {
 					if (!util::regex_match(*it, m, owner.rPacmanSWPLine)) {
-						owner.ctx.log.error("skipped optional dependency `%s`: couldn't parse exec() output line %d", ConstCharPtr{optDepName}, int{it.getPartNo()});
+						owner.ctx.log.error("skipped optional dependency `%s`: couldn't parse exec() output line %d", optDepName.cp(), it.getPartNo());
 						return;
 					}
 					if (m[1] == optDepName) {
@@ -239,7 +239,7 @@ namespace dimgel {
 				}
 				if (m2.empty()) {
 					if (it.getPartNo() == 1) {
-						owner.ctx.log.error("skipped optional dependency `%s`: exec() output is empty", ConstCharPtr{optDepName});
+						owner.ctx.log.error("skipped optional dependency `%s`: exec() output is empty", optDepName.cp());
 						return;
 					}
 					m2 = {m[2].first, m[2].second};
@@ -247,7 +247,7 @@ namespace dimgel {
 						// This is OK until PacMan::ParseArchiveTask::compute() finds out that chosen package does not match optDepName.
 						owner.ctx.log.warn(
 							FILE_LINE "rewritten optional dependency `%s` ---> `%s`: exec() output has multiple lines without exact match, took last line",
-							ConstCharPtr{optDepName}, ConstCharPtr{m[1].str().c_str()}
+							optDepName.cp(), m[1].str().c_str()
 						);
 					}
 				}
@@ -256,7 +256,7 @@ namespace dimgel {
 					// I don't care of them as long as requested dependency itself is downloaded. So I postponed this check until I found exact line I need.
 					owner.ctx.log.error(
 						"skipped optional dependency `%s`: couldn't parse URL `%s`: expected `file:///...`",
-						ConstCharPtr{optDepName}, ConstCharPtr{std::string(m2).c_str()}
+						optDepName.cp(), std::string(m2).c_str()
 					);
 					return;
 				}
@@ -264,7 +264,7 @@ namespace dimgel {
 				if (owner.ctx.verbosity >= Verbosity_Debug) {
 					owner.ctx.log.debug(
 						FILE_LINE "resolved `%s` ---> `%s%s`",
-						ConstCharPtr{optDepName}, ConstCharPtr{owner.archivesPath.c_str()}, ConstCharPtr{archiveName}
+						optDepName.cp(), owner.archivesPath.c_str(), archiveName.cp()
 					);
 				}
 			}
@@ -317,7 +317,7 @@ namespace dimgel {
 					}
 					std::cmatch m;
 					if (!util::regex_match(sv, m, owner.rPkginfoSWPLine)) {
-						throw Error(FILE_LINE "ignore `%s` / `.PKGINFO` line %d: failed to parse", ConstCharPtr{archiveName}, int{it.getPartNo()});
+						throw Error(FILE_LINE "ignore `%s` / `.PKGINFO` line %d: failed to parse", archiveName.cp(), it.getPartNo());
 					}
 					if (m[1] == "pkgname") {
 						std::string_view m2v {m[2].first, m[2].second};

@@ -23,12 +23,18 @@ namespace dimgel {
 	public:
 		Log(const Colors& colors) : colors(colors) {}
 
-		void debug(const char* format, ...) noexcept { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxDEBG, colors.blue,   format, args); }
-		void info (const char* format, ...) noexcept { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxINFO, colors.green,  format, args); }
-		void exec (const char* format, ...) noexcept { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxEXEC, colors.cyan,   format, args); }
-		void warn (const char* format, ...) noexcept { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxWARN, colors.yellow, format, args); }
-		void error(const char* format, ...) noexcept { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxERR , colors.red,    format, args); }
+		// __attribute__(): format arg is 2 because arg 1 is `this`.
+		void debug(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxDEBG, colors.blue,   format, args); }
+		void info (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxINFO, colors.green,  format, args); }
+		void exec (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxEXEC, colors.cyan,   format, args); }
+		void warn (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxWARN, colors.yellow, format, args); }
+		void error(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxERR , colors.red,    format, args); }
 
-		using F = void(Log::*)(const char* format, ...);
+		// GCC sometimes warns about arguments even without __attribute__() but sometimes does not; CLANG does not warn.
+//		using F = void(Log::*)(const char* format, ...) noexcept;
+		// GCC parse error:
+//		using F = void(Log::* __attribute__((format(printf, 2, 3))))(const char* format, ...) noexcept;
+		// GCC warns about arguments; CLANG warns about invalid attribute here and does not warn about arguments:
+		typedef void (Log::*F)(const char* format, ...) noexcept __attribute__((format(printf, 2, 3)));
 	};
 }

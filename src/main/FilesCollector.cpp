@@ -25,7 +25,7 @@ namespace dimgel {
 			if (it != data.uniqueFilesByPath1.end()) {
 				// This is ok: same file can be found while scanning filesystem or by realpath(symlink).
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "skip `/%s`: already added", ConstCharPtr{path1});
+					ctx.log.debug(FILE_LINE "skip `/%s`: already added", path1);
 				}
 				return it->second;
 			}
@@ -38,10 +38,10 @@ namespace dimgel {
 			data.uniqueFilesByPath1.insert({f->path1, f});
 
 			if (!allFilesByPath1.insert({f->path1, f}).second) {
-				throw Error(FILE_LINE "internal error: duplicate allFilesByPath1 key `%s`", ConstCharPtr{f->path1});
+				throw Error(FILE_LINE "internal error: duplicate allFilesByPath1 key `%s`", f->path1.cp());
 			}
 			if (ctx.verbosity >= Verbosity_Debug) {
-				ctx.log.debug(FILE_LINE "add `/%s`: %s", ConstCharPtr{path1}, ConstCharPtr{reason});
+				ctx.log.debug(FILE_LINE "add `/%s`: %s", path1, reason);
 			}
 			uniqueFilesAddedByCurrentIteration.push_back(f);
 			return f;
@@ -76,13 +76,13 @@ namespace dimgel {
 				// Already checked (inode == 0) in main.cpp's config reader.
 				if (!processedDirs.insert(dirInode).second) {
 					if (ctx.verbosity >= Verbosity_Debug) {
-						ctx.log.debug(FILE_LINE "skip `/%s`: already scanned", ConstCharPtr{path1});
+						ctx.log.debug(FILE_LINE "skip `/%s`: already scanned", path1);
 					}
 					return;
 				}
 
 				if (ctx.verbosity >= Verbosity_Debug) {
-					ctx.log.debug(FILE_LINE "scan `/%s`", ConstCharPtr{path1});
+					ctx.log.debug(FILE_LINE "scan `/%s`", path1);
 				}
 				path1[length] = '/';
 				path1[length + 1] = '\0';
@@ -100,7 +100,7 @@ namespace dimgel {
 				char resolvedPath0[PATH_MAX];
 				if (!util::realPath(path1, resolvedPath0)) {
 					if (ctx.verbosity >= Verbosity_Debug) {
-						ctx.log.debug(FILE_LINE "skip `/%s`: orphan symlink", ConstCharPtr{path1});
+						ctx.log.debug(FILE_LINE "skip `/%s`: orphan symlink", path1);
 					}
 					return;
 				}
@@ -110,19 +110,19 @@ namespace dimgel {
 					File* f = processRegularFileAfterStatx(sv.cp(), sv.rfind('/') + 1, sv.length(), st.mode);
 					if (f != nullptr) {
 						if (!allFilesByPath1.insert({alloc::String{ctx.mm, path1}, f}).second) {
-							throw Error(FILE_LINE "internal error: duplicate allFilesByPath1 key `%s`", ConstCharPtr{path1});
+							throw Error(FILE_LINE "internal error: duplicate allFilesByPath1 key `%s`", path1);
 						}
 						if (ctx.verbosity >= Verbosity_Debug) {
-							ctx.log.debug(FILE_LINE "add `/%s`: symlink to `%s`", ConstCharPtr{path1}, ConstCharPtr{resolvedPath0});
+							ctx.log.debug(FILE_LINE "add `/%s`: symlink to `%s`", path1, resolvedPath0);
 						}
 					} else {
 						if (ctx.verbosity >= Verbosity_Debug) {
-							ctx.log.debug(FILE_LINE "skip `/%s`: symlink to skipped `%s`", ConstCharPtr{path1}, ConstCharPtr{resolvedPath0});
+							ctx.log.debug(FILE_LINE "skip `/%s`: symlink to skipped `%s`", path1, resolvedPath0);
 						}
 					}
 				} else if (S_ISDIR(st.mode)) {
 					if (ctx.verbosity >= Verbosity_Debug) {
-						ctx.log.debug(FILE_LINE "follow `/%s`: symlink to dir `%s`", ConstCharPtr{path1}, ConstCharPtr{resolvedPath0});
+						ctx.log.debug(FILE_LINE "follow `/%s`: symlink to dir `%s`", path1, resolvedPath0);
 					}
 					processRecursive(resolvedPath0 + 1, 0, strlen(resolvedPath0 + 1), st.inode, DT_DIR);
 				}
@@ -178,10 +178,7 @@ namespace dimgel {
 								owner.scanAdditionalDir(sp);
 							}
 							if (owner.ctx.verbosity >= Verbosity_Debug) {
-								owner.ctx.log.debug(
-									FILE_LINE "`/%s`: add search path from config line %d: `%s`",
-									ConstCharPtr{f.path1}, int{add.configLineNo}, ConstCharPtr{sp.path1}
-								);
+								owner.ctx.log.debug(FILE_LINE "`/%s`: add search path from config line %d: `%s`", f.path1.cp(), add.configLineNo, sp.path1.cp());
 							}
 						}
 					};
@@ -189,7 +186,7 @@ namespace dimgel {
 					if (auto it = owner.data.packagesByFilePath1.find(f.path1);  it != owner.data.packagesByFilePath1.end()) {
 						Package* p = f.belongsToPackage = it->second;
 						if (owner.ctx.verbosity >= Verbosity_Debug) {
-							owner.ctx.log.debug(FILE_LINE "`/%s`: assign package `%s %s`", ConstCharPtr{f.path1}, ConstCharPtr{p->name}, ConstCharPtr{p->version});
+							owner.ctx.log.debug(FILE_LINE "`/%s`: assign package `%s %s`", f.path1.cp(), p->name.cp(), p->version.cp());
 						}
 						// Apply per-package configuration.
 						if (auto it2 = owner.ctx.addLibPathsByPackage.find(p);  it2 != owner.ctx.addLibPathsByPackage.end()) {
@@ -267,7 +264,7 @@ namespace dimgel {
 			auto throwParseError = [&](int line, const char* msgSuffix = "") {
 				throw Error(
 					"%s%d: `ldconfig -p` line %d: could not parse%s%s",
-					ConstCharPtr{FILE}, int{line}, int{it.getPartNo()}, (msgSuffix != nullptr && msgSuffix[0] != '\0' ? ": " : ""), ConstCharPtr{msgSuffix}
+					FILE, line, it.getPartNo(), (msgSuffix != nullptr && msgSuffix[0] != '\0' ? ": " : ""), msgSuffix
 				);
 			};
 
@@ -308,7 +305,7 @@ namespace dimgel {
 						// `path` is last on line, and SplitMutableString replaces '\n' with '\0', so `path` will be null-terminated.
 						if (!util::realPath(path1.c_str(), path0Buf)) {
 							if (ctx.verbosity >= Verbosity_WarnAndExec) {
-								ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: orphan symlink", int{it.getPartNo()}, ConstCharPtr{path1.c_str()});
+								ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: orphan symlink", it.getPartNo(), path1.c_str());
 							}
 							numSkipped++;
 							continue;
@@ -316,7 +313,7 @@ namespace dimgel {
 						if (strcmp(path0Buf + 1, path1.c_str())) {
 							// This is ok: ldcache maps names to both libs and lib symlinks.
 							if (ctx.verbosity >= Verbosity_Debug) {
-								ctx.log.debug(FILE_LINE "`ldconfig -p` line %d: rewritten `/%s` ---> `%s`", int{it.getPartNo()}, ConstCharPtr{path1.c_str()}, ConstCharPtr{path0Buf});
+								ctx.log.debug(FILE_LINE "`ldconfig -p` line %d: rewritten `/%s` ---> `%s`", it.getPartNo(), path1.c_str(), path0Buf);
 							}
 							path1 = path0Buf + 1;
 							it2 = allFilesByPath1.find(path1);
@@ -329,7 +326,7 @@ namespace dimgel {
 						auto st = util::statx(path1.c_str());
 						if (!S_ISREG(st.mode)) {
 							if (ctx.verbosity >= Verbosity_WarnAndExec) {
-								ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a regular file", int{it.getPartNo()}, ConstCharPtr{path1.c_str()});
+								ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a regular file", it.getPartNo(), path1.c_str());
 							}
 							numSkipped++;
 							continue;
@@ -340,14 +337,14 @@ namespace dimgel {
 
 					if (!f->isDynamicELF) {
 						if (ctx.verbosity >= Verbosity_WarnAndExec) {
-							ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a dynamic ELF, or inspection error", int{it.getPartNo()}, ConstCharPtr{f->path1});
+							ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a dynamic ELF, or inspection error", it.getPartNo(), f->path1.cp());
 						}
 						numSkipped++;
 						continue;
 					}
 					if (!f->isLib) {
 						if (ctx.verbosity >= Verbosity_WarnAndExec) {
-							ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a library", int{it.getPartNo()}, ConstCharPtr{f->path1});
+							ctx.log.warn(FILE_LINE "`ldconfig -p` line %d: skip `/%s`: not a library", it.getPartNo(), f->path1.cp());
 						}
 						numSkipped++;
 						continue;
@@ -365,7 +362,7 @@ namespace dimgel {
 							if (ctx.verbosity >= Verbosity_Debug) {
 								ctx.log.debug(
 									FILE_LINE "`ldconfig -p` line %d: skip {`%s`, %s-bit} ---> `/%s`: duplicate key and value",
-									int{it.getPartNo()}, ConstCharPtr{name.c_str()}, (f->is32 ? "32" : "64"), ConstCharPtr{f->path1}
+									it.getPartNo(), name.c_str(), (f->is32 ? "32" : "64"), f->path1.cp()
 								);
 							}
 							numSkipped++;
@@ -374,7 +371,7 @@ namespace dimgel {
 							// Consider this internal error and throw: it means that my understanding is incorrect / incomplete.
 							throw Error(
 								FILE_LINE "`ldconfig -p` line %d: error {`%s`, %s-bit}: duplicate key",
-								int{it.getPartNo()}, ConstCharPtr{name.c_str()}, (f->is32 ? "32" : "64")
+								it.getPartNo(), name.c_str(), (f->is32 ? "32" : "64")
 							);
 						}
 					}
@@ -382,7 +379,7 @@ namespace dimgel {
 					if (ctx.verbosity >= Verbosity_Debug) {
 						ctx.log.debug(
 							FILE_LINE "`ldconfig -p` line %d: add {`%s`, %s-bit}` ---> `/%s`",
-							int{it.getPartNo()}, ConstCharPtr{name.c_str()}, (f->is32 ? "32" : "64"), ConstCharPtr{f->path1}
+							it.getPartNo(), name.c_str(), (f->is32 ? "32" : "64"), f->path1.cp()
 						);
 					}
 					continue;
@@ -399,7 +396,7 @@ namespace dimgel {
 			if (numAdded + numSkipped != numLibs) {
 				throw Error(
 					FILE_LINE "output of `ldconfig -p` contains numLibs=%d in first line, but I ended up with numAdded=%d + numSkipped=%d",
-					int{numLibs}, int{numAdded}, int{numSkipped}
+					numLibs, numAdded, numSkipped
 				);
 			}
 		} // Call `ldconfig -p`, ...
@@ -417,9 +414,9 @@ namespace dimgel {
 				continue;
 			}
 			if (!data.libs.insert({PathAndBitnessKey{.path1 = path1, .is32 = f->is32}, f}).second) {
-				throw Error(FILE_LINE "error adding lib {`%s`, %s-bit}: duplicate key", ConstCharPtr{path1}, (f->is32 ? "32" : "64"));
+				throw Error(FILE_LINE "error adding lib {`%s`, %s-bit}: duplicate key", path1.cp(), (f->is32 ? "32" : "64"));
 			} else if (ctx.verbosity >= Verbosity_Debug) {
-				ctx.log.debug(FILE_LINE "add lib {`%s`, %s-bit} ---> `%s`", ConstCharPtr{path1}, (f->is32 ? "32" : "64"), ConstCharPtr{f->path1});
+				ctx.log.debug(FILE_LINE "add lib {`%s`, %s-bit} ---> `%s`", path1.cp(), (f->is32 ? "32" : "64"), f->path1.cp());
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace dimgel {
 		  fd {::open(path.c_str(), O_RDONLY)}
 	{
 		if (fd == -1) {
-			throw Error(FILE_LINE "`%s`: open() failed: %s", ConstCharPtr{path.c_str()}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "`%s`: open() failed: %s", path.c_str(), strerror(errno));
 		}
 	}
 
@@ -24,12 +24,12 @@ namespace dimgel {
 	void ArchiveReader::scanPartial(std::function<bool(archive_entry*)> onEntry) {
 		// Otherwise 2nd scan won't work:
 		if (alreadyScanned && lseek(fd, 0, SEEK_SET) == -1) {
-			throw Error(FILE_LINE "`%s`: lseek() failed: %s", ConstCharPtr{path.c_str()}, ConstCharPtr{strerror(errno)});
+			throw Error(FILE_LINE "`%s`: lseek() failed: %s", path.c_str(), strerror(errno));
 		}
 		alreadyScanned = true;
 
 		if (a != nullptr) {
-			throw Error(FILE_LINE "`%s`: already inside scan()", ConstCharPtr{path.c_str()});
+			throw Error(FILE_LINE "`%s`: already inside scan()", path.c_str());
 		}
 		a = archive_read_new();
 		Finally aFin([&]{
@@ -40,7 +40,7 @@ namespace dimgel {
 		archive_read_support_filter_all(a);
 		archive_read_support_format_all(a);
 		if (archive_read_open_fd(a, fd, 10240) != ARCHIVE_OK) {
-			throw Error(FILE_LINE "`%s`: archive_read_open_fd() failed: %s", ConstCharPtr{path.c_str()}, ConstCharPtr{archive_error_string(a)});
+			throw Error(FILE_LINE "`%s`: archive_read_open_fd() failed: %s", path.c_str(), archive_error_string(a));
 		}
 
 		archive_entry* e;
@@ -54,17 +54,14 @@ namespace dimgel {
 
 	BufAndRef ArchiveReader::getEntryData(archive_entry* e) {
 		if (a == nullptr) {
-			throw Error(FILE_LINE "`%s`: not inside scan()", ConstCharPtr{path.c_str()});
+			throw Error(FILE_LINE "`%s`: not inside scan()", path.c_str());
 		}
 		if (!archive_entry_size_is_set(e)) {
-			throw Error(FILE_LINE "`%s` / `%s`: archive_entry_size_is_set() == false", ConstCharPtr{path.c_str()}, ConstCharPtr{archive_entry_pathname(e)});
+			throw Error(FILE_LINE "`%s` / `%s`: archive_entry_size_is_set() == false", path.c_str(), archive_entry_pathname(e));
 		}
 		auto ssize = archive_entry_size(e);
 		if (ssize < 0) {
-			throw Error(
-				FILE_LINE "`%s` / `%s`: archive_entry_size() failed: %s",
-				ConstCharPtr{path.c_str()}, ConstCharPtr{archive_entry_pathname(e)}, ConstCharPtr{archive_error_string(a)}
-			);
+			throw Error(FILE_LINE "`%s` / `%s`: archive_entry_size() failed: %s", path.c_str(), archive_entry_pathname(e), archive_error_string(a));
 		}
 
 		auto buf = std::make_unique<char[]>(ssize + 1);
@@ -72,15 +69,12 @@ namespace dimgel {
 
 		auto sizeRead = archive_read_data(a, s, ssize);
 		if (sizeRead < 0) {
-			throw Error(
-				FILE_LINE "`%s` / `%s`: archive_read_data() failed: %s",
-				ConstCharPtr{path.c_str()}, ConstCharPtr{archive_entry_pathname(e)}, ConstCharPtr{archive_error_string(a)}
-			);
+			throw Error(FILE_LINE "`%s` / `%s`: archive_read_data() failed: %s", path.c_str(), archive_entry_pathname(e), archive_error_string(a));
 		}
 		if (sizeRead != ssize) {
 			throw Error(
 				FILE_LINE "`%s` / `%s`: archive_read_data() returned %ld != size %ld",
-				ConstCharPtr{path.c_str()}, ConstCharPtr{archive_entry_pathname(e)}, long{sizeRead}, long{ssize}
+				path.c_str(), archive_entry_pathname(e), long{sizeRead}, long{ssize}
 			);
 		}
 
