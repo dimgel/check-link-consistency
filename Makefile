@@ -4,7 +4,7 @@ DISTRO := Arch
 PREFIX=/usr
 DESTDIR=
 
-CC := c++ -march=x86-64 -O2 -flto=$(if $(NPROC),$(NPROC),1) -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
+CC := c++ -march=x86-64 -O2 -flto=$(if $(NPROC),$(NPROC),1) -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
 
 MAIN_CPPs := $(shell find src/main/ -type f -name '*.cpp')
 MAIN_Ds := $(MAIN_CPPs:src/%.cpp=target/build/main/%.d)
