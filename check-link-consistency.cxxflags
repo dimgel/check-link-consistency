@@ -1,1 +1,1 @@
--std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=return-type -DDISTRO=Arch
+-std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -DDISTRO=Arch
