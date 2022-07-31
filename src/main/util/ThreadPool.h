@@ -10,7 +10,7 @@
 
 namespace dimgel {
 
-	// API is not thread-safe. I Assume that all API methods are called from single ("main") thread.
+	// API is not thread-safe. I assume that all API methods are called from single ("main") thread.
 	class ThreadPool {
 	public:
 
