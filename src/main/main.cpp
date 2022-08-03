@@ -1,4 +1,3 @@
-#include <filesystem>
 #include <regex>
 #include <string.h>
 #include <unistd.h>
@@ -78,7 +77,9 @@ int main(int argc, char* argv[]) {
 				}
 			}
 		} // while()
-		if (!ok) {
+		if (!ok || optind != argc) {
+			char* x = strrchr(argv[0], '/');
+			const char* argv0 = (x != nullptr) ? (x + 1) : argv[0];
 			fprintf(stderr, "Usage: %s [options]\n"
 					"    -q  = Suppress INFO messages, output only errors\n"
 					"    -v  = Output warnings + exec() command lines + `pacman -Sw` output (useful to investigate)\n"
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
 					"     1  = not consistent :(\n"
 					"     2  = some bad error :(((\n"
 					"   139  = even worse, if you catch my meaning ;)\n",
-				fs::path(argv[0]).filename().c_str()
+				argv0
 			);
 			return ExitStatus_Error;
 		}
