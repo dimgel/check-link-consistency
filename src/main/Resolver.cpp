@@ -185,7 +185,7 @@ namespace dimgel {
 				return a->path1 < b->path1;
 			});
 		}
-		util::sort(packagesSorted, [&](Package* a, Package* b) ->bool {
+		util::sort(packagesSorted, [&](Package* a, Package* b) -> bool {
 			if (a == nullptr) { return false; }
 			if (b == nullptr) { return true; }
 			return a->name < b->name;

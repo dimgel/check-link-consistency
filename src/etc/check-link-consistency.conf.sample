@@ -20,6 +20,7 @@
 addOptDepend=git libgnome-keyring
 addOptDepend=python-pyqt5 qt5-sensors
 addOptDepend=qt5-speech libspeechd
+addOptDepend=vlc libcddb
 addOptDepend=wine lib32-gstreamer
 
 
@@ -33,6 +34,7 @@ addLibPath=firefox /usr/lib/firefox
 addLibPath=graphviz /usr/lib/R/lib
 addLibPath=jre-openjdk-headless /usr/lib/jvm/java-18-openjdk/lib/server
 addLibPath=libreoffice-fresh /usr/lib/jvm/java-18-openjdk/lib
+addLibPath=libreoffice-still /usr/lib/jvm/java-18-openjdk/lib
 addLibPath=librewolf /usr/lib/librewolf
 addLibPath=postgresql /usr/lib/perl5/5.36/core_perl/CORE
 addLibPath=qtcreator /usr/lib/qtcreator

@@ -114,7 +114,7 @@ install:
 
 
 # Does not work: make tries to make .d files first.
-# Use ./clean.sh.
+# Use ./clean.sh instead.
 
 #.PHONY: clean
 #clean:

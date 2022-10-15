@@ -39,26 +39,27 @@ namespace dimgel {
 		Spinlock queueSpinlock {};
 		std::queue<SearchPath> queue;
 
-		// Not only many DT_RUNPATH-s contain /usr/lib which is already scanned by default, but symlinks may point to already scanned directories too.
+		// Not only many DT_RUNPATH-s contain /usr/lib which is already scanned by default,
+		// but symlinks may point to already scanned directories too: /bin ---> /usr/bin, /lib ---> /usr/lib, etc.
 		std::unordered_set<ino_t> processedDirs;
 
-		// Which files to run ELFInspector on.
+		// Which files to run ELFInspector-s on.
 		std::vector<File*> uniqueFilesAddedByCurrentIteration;
 
 		// Only after ELFInspector-s are completed, we know which files are 32-bit / 64-bit / non-ELFs, and can fill `libs`.
+		// Until then, here we collect all files [to be] processed by ELFInspector-s.
 		// Key = canonical or symlink path. Multiple keys may reference same File. Used to fill `libs` and `ldCache`.
 		alloc::StringHashMap<File*> allFilesByPath1;
 
-
-		// Code deduplication. If `reason` is not nullptr, then file is inserted unconditionally; otherwise it's analyzed.
-		// Param `regNameOffset` is needed if reason == nullptr.
-		// Param `st_mode` is needed always.
+		// Code deduplication. If `reason` != nullptr, then file is added unconditionally; otherwise its x-permission and extension are checked first.
+		// Param `regNameOffset` is needed if `reason` == nullptr.
+		// Param `st_mode` is always needed.
 		File* processRegularFileAfterStatx(const char* path1, size_t regNameOffset, size_t length, decltype(stat::st_mode) st_mode, const char* reason = nullptr);
 
-		// Param `path1` is char[PATH_MAX] without leading '/', `length` is current size to append to; path0[length] must be '\0'.
+		// Param `path1` is char[PATH_MAX] without leading '/', `length` is current size to append to; path1[length] must be '\0'.
 		// Must be absolute, otherwise:
 		// - `readlink(2)` might behave strangely (didn't test thoroughly, but they say);
-		// - `realpath(3)` (which I use) will try to resolve path relative to current dir.
+		// - `realpath(3)` (which I use) will try to resolve path relative to current dir.   // TODO Wtf? I already call chdir("/") in main.
 		// Must be realpath (no symlinks, etc.), see "On symlinks" in notes/decisions.txt.
 		//
 		// Param `regNameOffset` is offset of last name component; needed only for d_type == DT_REG.

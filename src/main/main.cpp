@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
 					break;
 				}
 				case 'v': {
+					// max() is because `-v` may be used after both `-q` and another `-v`.
 					ctx_verbosity = std::max(ctx_verbosity, Verbosity_Default) + 1;
 					break;
 				}

@@ -2,7 +2,8 @@
 /local
 
 # QtCreator's stuff.
-*.creator.user
+/*.creator.user
+/.qtc_clangd
 # By default QtCreator sets BuildDirectory in {project}.creator.user to project root
 # where makefile resides (which is correct: it's where `make` is supposed to start).
 # These files were created in project root by QtCreator's experimental clangd mode:

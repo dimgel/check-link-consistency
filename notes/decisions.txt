@@ -11,13 +11,13 @@ For secure-execution, `ld.so(8)` does not take `LD_LIBRARY_PATH` into account. A
 * SUID/SGID binaries are detected as secure, but nothing else (particularly, I don't analyze file caps).
 * All libraries are analyzed as non-secure, even those which might be linked to secure binaries.
 
-I assume that $ORIGIN in library's RPATH is relative to library itself (i.e. to it's containing directory, of course),
-not to executable it's linked to. Google says that $ORIGIN is resolved "relative to executable", but:
-1. Reality is different. For example, most of /usr/lib/qtcreator/plugins/*.so have RPATH="$ORIGIN:$ORIGIN/../:$ORIGIN/../../Qt/lib",
+$ORIGIN in library's RPATH is relative to library itself (i.e. to it's containing directory, of course), not to executable it's linked to.
+1. ld`.so(8)` says: "This expands to the directory containing the program or shared object."
+2. For example, most of /usr/lib/qtcreator/plugins/*.so have RPATH="$ORIGIN:$ORIGIN/../:$ORIGIN/../../Qt/lib",
    and `ldd` resolves their neededLibs as if $ORIGIN was library's contianing directory itself, not /usr/bin/qtcreator executable's
    containing directory /usr/bin: e.g. libStudioWelcome.so needs libCore.so (in the same dir), libUtils.so (in parent dir), etc.
    And QtCreator was not the only example.
-2. If shared library is linked to executables located in different dirs, and its $ORIGIN resolved
+3. If shared library is linked to executables located in different dirs, and its $ORIGIN resolved
    against those different dirs, then we'd need its multiple copies in memory, which is ridiculous.
 
 If DT_RPATH/DT_RUNPATH/DT_NEEDED/LD_LIBRARY_PATH component is relative path but not "$ORIGIN/..." (e.g. "./lib"), I warn and ignore:
