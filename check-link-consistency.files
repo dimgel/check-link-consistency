@@ -52,7 +52,6 @@ src/main/util/alloc/alloc.cpp
 src/main/util/alloc/alloc.h
 src/main/util/util.cpp
 src/main/util/util.h
-src/make/transform-d.cpp
 src/test/main.cpp
 src/test/test_StdCapture.cpp
 src/test/test_alloc.cpp

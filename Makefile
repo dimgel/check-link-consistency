@@ -1,10 +1,15 @@
 APP_NAME := check-link-consistency
-DISTRO := Arch
-
 PREFIX=/usr
 DESTDIR=
 
-CC := c++ -march=x86-64 -O2 -flto=$(if $(NPROC),$(NPROC),1) -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
+JOBS = $(shell nproc)
+MAKEFLAGS += " -j $(JOBS) -l $(JOBS)"
+# Don't print commands being executed, nor "Nothing to be done for ..." message.
+MAKEFLAGS += " -s"
+
+DISTRO := Arch
+CC := c++ -march=x86-64 -O2 -flto=auto -std=c++20 -fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
+
 
 MAIN_CPPs := $(shell find src/main/ -type f -name '*.cpp')
 MAIN_Ds := $(MAIN_CPPs:src/%.cpp=target/build/main/%.d)
@@ -27,53 +32,28 @@ TEST_Os := $(TEST_Ds:.d=.o)
 
 
 .PHONY: all
-all: target/$(APP_NAME) target/$(APP_NAME).conf.sample test dummy
+all: target/$(APP_NAME) target/$(APP_NAME).conf.sample test
 
-
-# Getting rid of "Nothing to be done for '...'."
-dummy:
-	@true
-
-
-target/build/make/transform-d: src/make/transform-d.cpp
-	@echo 'CC $@'
-	@mkdir -p $(@D)
-	@$(CC) -o $@ $<
-
-
-target/build/main/%.d: src/%.cpp target/build/make/transform-d
-	@echo 'CC $@'
-	@mkdir -p $(@D)
-	@$(CC) -E -MMD -MP -MF $@ -MT "$(@:.d=.o)" -o /dev/null $<
-	@target/build/make/transform-d $@
-
-target/build/test/%.d: src/%.cpp target/build/make/transform-d
-	@echo 'CC $@'
-	@mkdir -p $(@D)
-	@$(CC) -E -MMD -MP -MF $@ -MT "$(@:.d=.o)" -o /dev/null $<
-	@target/build/make/transform-d $@
-
-
-# Don't delete .d files.
-$(MAIN_Ds):
-$(TEST_Ds):
 
 # Delete built-in rules.
 %.o: %.cpp
 
--include $(MAIN_Ds)
--include $(TEST_Ds)
-
-
 target/build/main/%.o: src/%.cpp target/build/main/%.d
 	@echo 'CC $@'
 	@mkdir -p $(@D)
-	@$(CC) -c -fPIC -o $@ $<
+	@$(CC) -c -MMD -MP -fPIC -o $@ $<
 
 target/build/test/%.o: src/%.cpp target/build/test/%.d
 	@echo 'CC $@'
 	@mkdir -p $(@D)
-	@$(CC) -c -fPIC -o $@ $<
+	@$(CC) -c -MMD -MP -fPIC -o $@ $<
+
+
+# Don't delete .d files, phony if missing.
+$(MAIN_Ds):
+$(TEST_Ds):
+-include $(MAIN_Ds)
+-include $(TEST_Ds)
 
 
 target/$(APP_NAME): $(MAIN_Os)
@@ -93,7 +73,7 @@ target/$(APP_NAME).conf.sample: src/etc/$(APP_NAME).conf.sample
 
 
 .PHONY: test
-test: $(TEST_PATH).timestamp dummy
+test: $(TEST_PATH).timestamp
 
 $(TEST_PATH).timestamp: $(TEST_PATH)
 	@echo '>> $(TEST_PATH)'
@@ -113,9 +93,6 @@ install:
 # ----------------------------------------------------------------------------------------------------------------------------------------
 
 
-# Does not work: make tries to make .d files first.
-# Use ./clean.sh instead.
-
-#.PHONY: clean
-#clean:
-#	@if [ -e target ]; then echo "rm -rf target"; rm -rf target; fi
+.PHONY: clean
+clean:
+	@if [ -e target ]; then echo "rm -rf target"; rm -rf target; fi
