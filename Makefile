@@ -95,4 +95,4 @@ install:
 
 .PHONY: clean
 clean:
-	@if [ -e target ]; then echo "rm -rf target"; rm -rf target; fi
+	@rm -rf target
