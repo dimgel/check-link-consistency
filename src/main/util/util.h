@@ -51,7 +51,7 @@ namespace dimgel::util {
 	// Throws on other errors.
 	bool realPath(const char* path, char* buf);
 
-	// Acts somewhat like realPath() but does not consult filesystem; i.e. path cannot exist.
+	// Acts somewhat like realPath() but does not consult filesystem; i.e. path is not required to exist.
 	// Returns strlen(buf).
 	// E.g.: "a/b/c/../.././d///e/" ---> "a/d/e/".
 	size_t             normalizePath(const char* path, char* buf);

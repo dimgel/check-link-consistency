@@ -20,7 +20,7 @@ Run as `root`. It does not perform any system modifications, but calls `pacman -
 
 To see warnings and `pacman -Sw` output, run with `-v` option; it's **useful to investigate problems**. Try `-h` for more options.
 
-**ATTENTION:** First run downloads **LOTS** of packages. From now on, **you don't want** to run `paccache -dvuk0` because I'll re-download everything again on next run; but you can safely run `paccache -dvuk1`.
+**ATTENTION:** First run downloads **LOTS** of packages. From now on, **you don't want** to run `paccache -rvuk0` because I'll re-download everything again on next run; but you can safely run `paccache -rvuk1`.
 
 ## Motivation
 
