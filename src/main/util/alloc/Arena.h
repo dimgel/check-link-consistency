@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <ostream>
 #include "../Spinlock.h"
 #include "alloc.h"
 #include "MemoryManager.h"
