@@ -10,7 +10,7 @@ It does as it sounds, and much better than [`findbrokenpkgs`](https://aur.archli
 
 ## Install
 
-1. On [ArtixLinux](https://artixlinux.org/), install package `check-link-consistency` from `universe` repository (maybe outdated). Otherwise, clone or download sources, then run `make && sudo make install`. Binary will go to `/usr/bin/`, sample config -- to `/usr/share/check-link-consistency/`.
+1. You can install latest version from AUR: [check-link-consistency-git](https://aur.archlinux.org/packages/check-link-consistency-git). On [ArtixLinux](https://artixlinux.org/), you can install package `check-link-consistency` from `universe` repository (maybe outdated). Or you can clone or download sources, then run `make && sudo make install`. Binary will go to `/usr/bin/`, sample config -- to `/usr/share/check-link-consistency/`.
 
 2. Copy `/usr/share/check-link-consistency/check-link-consistency.conf.sample` to `/etc/check-link-consistency.conf` and edit.
 
