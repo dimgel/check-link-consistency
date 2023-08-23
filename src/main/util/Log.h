@@ -24,11 +24,11 @@ namespace dimgel {
 		Log(const Colors& colors) : colors(colors) {}
 
 		// __attribute__(): format arg is 2 because arg 1 is `this`.
-		void debug(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxDEBG, colors.blue,   format, args); }
-		void info (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxINFO, colors.green,  format, args); }
-		void exec (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxEXEC, colors.cyan,   format, args); }
-		void warn (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxWARN, colors.yellow, format, args); }
-		void error(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxERR , colors.red,    format, args); }
+		void debug(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxDEBG, colors.blue,   format, args);  va_end(args); }
+		void info (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDOUT_FILENO, pfxINFO, colors.green,  format, args);  va_end(args); }
+		void exec (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxEXEC, colors.cyan,   format, args);  va_end(args); }
+		void warn (const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxWARN, colors.yellow, format, args);  va_end(args); }
+		void error(const char* format, ...) noexcept __attribute__((format(printf, 2, 3))) { va_list args;  va_start(args, format);  impl(STDERR_FILENO, pfxERR , colors.red,    format, args);  va_end(args); }
 
 		// GCC sometimes warns about arguments even without __attribute__() but sometimes does not; CLANG does not warn.
 //		using F = void(Log::*)(const char* format, ...) noexcept;

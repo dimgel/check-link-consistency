@@ -276,7 +276,7 @@ int main(int argc, char* argv[]) {
 							} else {
 								bool whereIsDir = where.ends_with("/**");
 								if (whereIsDir) {
-									where = where.substr(0, where.length() - 3);
+									where.resize(where.length() - 3);
 								}
 								char whereReal0[PATH_MAX];
 								if (!util::realPath(where.c_str(), whereReal0)) {
@@ -372,7 +372,7 @@ int main(int argc, char* argv[]) {
 
 		ThreadPool ctx_threadPool {0, [&](const char* taskExceptionMessage) {
 			// Called asynchronously (it's ok, Log synchronizes its output) for all exceptions except Abort (it's ok too).
-			if (taskExceptionMessage != nullptr || *taskExceptionMessage != '\0') {
+			if (taskExceptionMessage && *taskExceptionMessage) {
 				ctx_log.error("%s", taskExceptionMessage);
 			}
 		}};
