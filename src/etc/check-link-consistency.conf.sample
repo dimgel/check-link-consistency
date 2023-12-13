@@ -19,10 +19,13 @@
 # NOTE: libgnome-keyring is deprecated, but git depends on it anyway.
 addOptDepend=abseil-cpp gtest
 addOptDepend=git libgnome-keyring
+addOptDepend=libreoffice-fresh coin-or-clp
 #addOptDepend=python-pyqt5 qt5-sensors
 addOptDepend=qt5-speech libspeechd
 addOptDepend=vlc libcddb
 addOptDepend=wine lib32-gstreamer
+# NOTE: Doesn't work: reported 32-bit /usr/lib32/wine/i386-unix/winewayland.so depends on 64-bit libxkbcommon.so.0.
+#addOptDepend=wine libxkbcommon
 
 
 # Syntax: addLibPath={package|/abs/file/path|/abs/directory/path/**} {/abs/directory/path}
