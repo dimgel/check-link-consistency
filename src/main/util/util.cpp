@@ -53,16 +53,18 @@ namespace dimgel::util {
 	}
 
 	std::string regex_escape(const std::string& s) {
-		// Taken from: https://stackoverflow.com/a/39237913/4247442
+		// Adopted from: https://stackoverflow.com/a/39237913/4247442
 		static const char metachars[] = R"(\.^$-+()[]{}|?*)";
 		std::string x;
-		x.reserve(s.size() * 2);
+		x.resize(s.size() * 2);
+		char* xp = x.data();
 		for (auto c : s) {
 			if (strchr(metachars, c)) {
-				x.push_back('\\');
+				*xp++ = '\\';
 			}
-			x.push_back(c);
+			*xp++ = c;
 		}
+		x.resize(xp - x.data());
 		return x;
 	}
 
