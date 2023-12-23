@@ -116,6 +116,7 @@ int main(int argc, char* argv[]) {
 		std::vector<SearchPath> ctx_scanBins;
 		std::vector<SearchPath> ctx_scanDefaultLibs;
 		std::vector<SearchPath> ctx_scanMoreLibs;
+		std::vector<std::pair<std::regex, int>> ctx_ignoreFiles;
 		alloc::StringHashMap<std::vector<AddLibPath>> ctx_addLibPathsByFilePath1Prefix;
 		alloc::StringHashMap<std::vector<AddLibPath>> ctx_addLibPathsByPackageName;
 		std::unordered_map<std::string, std::vector<AddOptDepend>> ctx_addOptDependsByPackageName;
@@ -320,6 +321,18 @@ int main(int argc, char* argv[]) {
 							scanMore(ctx_scanBins);
 						} else if (l.key() == "scanMoreLibs") {
 							scanMore(ctx_scanMoreLibs);
+						} else if (l.key() == "ignoreFiles") {
+
+							auto s = l.value().s();
+							if (!s.starts_with('/')) {
+								throw Error("Config line %d: bad %s: must start with '/'", l.lineNo(), l.key().cp());
+							}
+							try {
+								ctx_ignoreFiles.push_back({util::pathWildcardsToRegex(s.substr(1)), l.lineNo()});
+							} catch (std::exception& e) {
+								throw Error("Config line %d: bad %s: wildcard regex compilation failed: %s", l.lineNo(), l.key().cp(), e.what());
+							}
+
 						} else if (l.key() == "addOptDepend") {
 
 							std::cmatch m;
@@ -388,6 +401,7 @@ int main(int argc, char* argv[]) {
 			.scanBins = ctx_scanBins,
 			.scanDefaultLibs = ctx_scanDefaultLibs,
 			.scanMoreLibs = ctx_scanMoreLibs,
+			.ignoreFiles = ctx_ignoreFiles,
 			.addLibPathsByFilePath1Prefix = ctx_addLibPathsByFilePath1Prefix,
 			.addLibPathsByPackage {},
 

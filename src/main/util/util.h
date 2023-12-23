@@ -30,6 +30,8 @@ namespace dimgel::util {
 	inline std::string trim(const std::string& s) { return trim(std::string_view(s)); }
 
 
+	std::string regex_escape(const std::string& s);
+
 	inline auto regex_match(std::string_view s, std::regex r) { return std::regex_match(s.begin(), s.end(), r); }
 	inline auto regex_match(StringRef        s, std::regex r) { return regex_match(s.sv(), r); }
 	inline auto regex_match(alloc::String    s, std::regex r) { return regex_match(s.sv(), r); }
@@ -45,6 +47,12 @@ namespace dimgel::util {
 	template<class T> bool contains(const std::vector<T>& v, const T& x) {
 		return std::find(v.begin(), v.end(), x) != v.end();
 	}
+
+
+	// TODO Should I also use it for addLibPath which currently can contain "**"?
+	/// @param s  May contain '?' (any char except '/'), '*' (0+ any chars except '/'), '**' (0+ any chars).
+	/// @return   Regex matching full string (^...$).
+	std::regex pathWildcardsToRegex(const std::string& s);
 
 
 	// Returns false on ENOENT.

@@ -52,6 +52,33 @@ namespace dimgel::util {
 		}
 	}
 
+	std::string regex_escape(const std::string& s) {
+		// Taken from: https://stackoverflow.com/a/39237913/4247442
+		static const char metachars[] = R"(\.^$-+()[]{}|?*)";
+		std::string x;
+		x.reserve(s.size() * 2);
+		for (auto c : s) {
+			if (strchr(metachars, c)) {
+				x.push_back('\\');
+			}
+			x.push_back(c);
+		}
+		return x;
+	}
+
+
+	std::regex pathWildcardsToRegex(const std::string& s) {
+		static const std::regex r2("\\\\\\*\\\\\\*");
+		static const std::regex r1("\\\\\\*");
+		static const std::regex rq("\\\\\\?");
+
+		std::string x = "^" + regex_escape(s) + "$";
+		x = std::regex_replace(x, r2, ".*");
+		x = std::regex_replace(x, r1, "[^/]*");
+		x = std::regex_replace(x, rq, "[^/]");
+		return std::regex {x};
+	}
+
 
 	bool realPath(const char* path, char* buf) {
 		if (::realpath(path, buf) != nullptr) {

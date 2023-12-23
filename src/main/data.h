@@ -97,6 +97,7 @@ namespace dimgel {
 		std::vector<SearchPath>& scanBins;          // defaults_*.hpp/scanDefaultBins + .conf/scanMoreBins
 		std::vector<SearchPath>& scanDefaultLibs;   // defaults_*.hpp/scanDefaultLibs
 		std::vector<SearchPath>& scanMoreLibs;      // LD_LIBRARY_PATH + .conf/scanMoreLibs
+		std::vector<std::pair<std::regex, int>>& ignoreFiles;   // 2nd value is config line
 		alloc::StringHashMap<std::vector<AddLibPath>>& addLibPathsByFilePath1Prefix;        // .conf/addLibPath
 		std::unordered_map<class Package*, std::vector<AddLibPath>> addLibPathsByPackage;   // .conf/addLibPath
 

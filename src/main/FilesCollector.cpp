@@ -65,6 +65,14 @@ namespace dimgel {
 
 	// Param `path1` must be mutable buffer: char[PATH_MAX].
 	void FilesCollector::processRecursive(char* path1, size_t regNameOffset, size_t length, ino_t dirInode, uint8_t d_type) {
+		for (auto& [r, configLine] : ctx.ignoreFiles) {
+			if (std::regex_match(path1, path1 + length, r)) {
+				if (ctx.verbosity >= Verbosity_Debug) {
+					ctx.log.debug(FILE_LINE "ignore `/%s`: by config line %d", path1, configLine);
+				}
+				return;
+			}
+		}
 		switch (d_type) {
 			case DT_REG: {
 				auto st = util::statx(path1);
