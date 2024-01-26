@@ -4,6 +4,7 @@ README.md
 build.sh
 clean.sh
 Makefile
+notes/TODO.txt
 notes/code-style.txt
 notes/decisions.txt
 notes/pacman-sources.txt

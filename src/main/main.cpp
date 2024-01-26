@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 					"    -O  = Don't download & analyze optional dependencies\n"
 					"    -N  = No network: pretend optional dependencies are already downloaded;\n"
 					"          bypass `pacman -Sw` but otherwise process optdeps as usual\n"
-					"    -W  = Disable wide output\n"
+					"    -W  = Disable wide output, use machine-readable format\n"
 					"    -C  = Don't colorize output\n"
 					"Status codes:\n"
 					"     0  = system is consistent :)\n"

@@ -265,7 +265,7 @@ namespace dimgel {
 				for (File* f : packages[p]) {
 					ctx.log.error("    File: /%s", f->path1.cp());
 					for (auto& nl : neededLibsSorted[f]) {
-						ctx.log.error("        Unresolved needed lib: %s", nl.cp());
+						ctx.log.error("        Lib: %s", nl.cp());
 					}
 				}
 			}
