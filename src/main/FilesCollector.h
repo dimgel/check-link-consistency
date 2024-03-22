@@ -66,6 +66,8 @@ namespace dimgel {
 		// Param `dirInode` is needed only for d_type == DT_DIR.
 		void processRecursive(char* path1, size_t regNameOffset, size_t length, ino_t dirInode, uint8_t d_type);
 
+		// 1. If `queue` is not empty, scan directories in `queue` & fill `uniqueFilesAddedByCurrentIteration`.
+		// 2. If `uniqueFilesAddedByCurrentIteration` is not empty (filled by step 1 or from `ldconfig -p`), run ELFInspector on these files & goto 1.
 		void processQueue();
 
 		// Called from ELFInspector::Task::compute() with File.rPath and File.runPath entries.
