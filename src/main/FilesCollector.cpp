@@ -353,24 +353,26 @@ namespace dimgel {
 
 					auto inserted = data.ldCache.insert({{alloc::String{ctx.mm, name}, f->is32}, f});
 					if (!inserted.second) {
-						if (ctx.verbosity >= Verbosity_Debug) {
-							if (inserted.first->second == f) {
-								// Allow 100% duplicate (both key and value):
-								// I got duplicate {`ld-linux.so.2`, 32-bit}` ---> `/usr/lib32/ld-2.33.so` here
-								// because both /usr/lib/ld-linux.so.2 and /usr/lib32/ld-linux.so.2 are symlinks to /usr/lib32/ld-2.33.so
-								// (while /usr/lib/ld-linux-x86-64.so.2 is symlink to /usr/lib/ld-2.33.so)
-								// and `ldconfig -p` output contains two lines:
-								//     ld-linux.so.2 (ELF) => /usr/lib32/ld-linux.so.2
-								//     ld-linux.so.2 (ELF) => /usr/lib/ld-linux.so.2
+						if (inserted.first->second == f) {
+							// Allow 100% duplicate (both key and value):
+							// I got duplicate {`ld-linux.so.2`, 32-bit}` ---> `/usr/lib32/ld-2.33.so` here
+							// because both /usr/lib/ld-linux.so.2 and /usr/lib32/ld-linux.so.2 are symlinks to /usr/lib32/ld-2.33.so
+							// (while /usr/lib/ld-linux-x86-64.so.2 is symlink to /usr/lib/ld-2.33.so)
+							// and `ldconfig -p` output contains two lines:
+							//     ld-linux.so.2 (ELF) => /usr/lib32/ld-linux.so.2
+							//     ld-linux.so.2 (ELF) => /usr/lib/ld-linux.so.2
+							if (ctx.verbosity >= Verbosity_Debug) {
 								ctx.log.debug(
 									FILE_LINE "`ldconfig -p` line %d: skip {`%s`, %s-bit} ---> `/%s`: duplicate key and value",
 									it.getPartNo(), name.c_str(), (f->is32 ? "32" : "64"), f->path1.cp()
 								);
-							} else {
-								// BUGFIX (github #1):
-								//     If ld.so.cache contains duplicated keys (e.g. libOpenCL.so if /opt/cuda/ is installed)
-								//     then looks like `ldd` takes first found row in cache (in the same order as `ldconfig -p` outputs),
-								//     so will I.
+							}
+						} else {
+							// BUGFIX (github #1):
+							//     If ld.so.cache contains duplicated keys (e.g. libOpenCL.so if /opt/cuda/ is installed)
+							//     then looks like `ldd` takes first found row in cache (in the same order as `ldconfig -p` outputs),
+							//     so will I.
+							if (ctx.verbosity >= Verbosity_WarnAndExec) {
 								ctx.log.warn(
 									FILE_LINE "`ldconfig -p` line %d: skip {`%s`, %s-bit} ---> `/%s`: duplicate key, keeping prev value `/%s`",
 									it.getPartNo(), name.c_str(), (f->is32 ? "32" : "64"), f->path1.cp(), inserted.first->second->path1.cp()
