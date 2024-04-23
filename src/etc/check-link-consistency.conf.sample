@@ -26,7 +26,7 @@ ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/sunos-**
 #
 addOptDepend=abseil-cpp gtest
 addOptDepend=libreoffice-fresh coin-or-clp
-addOptDepend=qt5-speech libspeechd
+addOptDepend=qt6-speech libspeechd
 addOptDepend=wine lib32-gstreamer
 
 
@@ -36,9 +36,11 @@ addOptDepend=wine lib32-gstreamer
 # Applies to optional dependencies too: e.g. script resolves `libjawt.so` for `libreoffice-fresh` even if I don't have `java-runtime` installed. 
 #
 #addLibPath=cairo /usr/lib/cairo
+addLibPath=cuda /opt/cuda/targets/x86_64-linux/lib
 addLibPath=firefox /usr/lib/firefox
 #addLibPath=graphviz /usr/lib/R/lib
-addLibPath=jre-openjdk /usr/lib/jvm/java-22-openjdk/lib/server
+addLibPath=jdk-openjdk /usr/lib/jvm/java-22-openjdk/lib/server
+#addLibPath=jre-openjdk /usr/lib/jvm/java-22-openjdk/lib/server
 addLibPath=libreoffice-fresh /usr/lib/jvm/java-22-openjdk/lib
 #addLibPath=libreoffice-still /usr/lib/jvm/java-22-openjdk/lib
 addLibPath=librewolf /usr/lib/librewolf
