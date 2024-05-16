@@ -19,6 +19,7 @@
 #
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/freebsd-**
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/sunos-**
+ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/linux-riscv64/**
 
 
 # Syntax: addOptDepend={packageName} {optDependPackageName}
