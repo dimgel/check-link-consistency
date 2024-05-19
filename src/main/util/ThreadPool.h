@@ -11,7 +11,7 @@
 namespace dimgel {
 
 	// API is not thread-safe. I assume that all API methods are called from single ("main") thread.
-	class ThreadPool {
+	class ThreadPool final {
 	public:
 
 		// ATTENTION!!!
@@ -24,6 +24,8 @@ namespace dimgel {
 			Task(const Task&) = delete;
 			Task& operator =(const Task&) = delete;
 
+			virtual ~Task() = default;
+
 			// Called first, in parallel.
 			virtual void compute() {};
 
@@ -35,7 +37,7 @@ namespace dimgel {
 
 		// ATTENTION!!!
 		// First all compute() are called, then all merge(), then group and all its tasks are deleted. Mind memory usage of large groups.
-		class TaskGroup : public Task {
+		class TaskGroup final : public Task {
 			const ThreadPool& owner;
 			std::vector<std::unique_ptr<Task>> tasks;
 		public:
