@@ -31,6 +31,13 @@ addOptDepend=qt6-speech libspeechd
 addOptDepend=wine lib32-gstreamer
 
 
+# Syntax: removeOptDepend={packageName} {optDependPackageName}
+#
+# For omniverse/ungoogled-chromium 125.0.6422.41-1:
+# I found this "chromium-extension-web-store" only in AUR which check-link-consistency does not analyze.
+removeOptDepend=ungoogled-chromium chromium-extension-web-store
+
+
 # Syntax: addLibPath={package|/abs/file/path|/abs/directory/path/**} {/abs/directory/path}
 # Adds specified directory as library search path for {all files in package | specific file | all files in directory and its subdirectories}.
 # Directory is added with highest priority (before RPATH), because package-specific libs may override system ones.

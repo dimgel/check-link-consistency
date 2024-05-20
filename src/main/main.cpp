@@ -120,6 +120,7 @@ int main(int argc, char* argv[]) {
 		alloc::StringHashMap<std::vector<AddLibPath>> ctx_addLibPathsByFilePath1Prefix;
 		alloc::StringHashMap<std::vector<AddLibPath>> ctx_addLibPathsByPackageName;
 		std::unordered_map<std::string, std::vector<AddOptDepend>> ctx_addOptDependsByPackageName;
+		std::unordered_map<std::string, std::vector<RemoveOptDepend>> ctx_removeOptDependsByPackageName;
 
 		{
 			// See /notes/decisions.txt.
@@ -333,7 +334,8 @@ int main(int argc, char* argv[]) {
 								throw Error("Config line %d: bad %s: wildcard regex compilation failed: %s", l.lineNo(), l.key().cp(), e.what());
 							}
 
-						} else if (l.key() == "addOptDepend") {
+						} else if (l.key() == "addOptDepend" || l.key() == "removeOptDepend") {
+							bool add = l.key().starts_with('a');
 
 							std::cmatch m;
 							if (!util::regex_match(l.value(), m, rAddOptDepend)) {
@@ -348,9 +350,14 @@ int main(int argc, char* argv[]) {
 								throw Error("Config line %d: bad %s: optional dependency `%s` contains '/'", l.lineNo(), l.key().cp(), optdep.c_str());
 							}
 
-							ctx_addOptDependsByPackageName[package].push_back({.configLineNo = l.lineNo(), .optDepName = alloc::String{ctx_mm, optdep}});
+							(add ? ctx_addOptDependsByPackageName : ctx_removeOptDependsByPackageName)[package].push_back(
+								{.configLineNo = l.lineNo(), .optDepName = alloc::String{ctx_mm, optdep}}
+							);
 							if (ctx_verbosity >= Verbosity_Debug) {
-								ctx_log.debug( "Config line %d: add optional dependency `%s` to package `%s`", l.lineNo(), optdep.c_str(), package.c_str());
+								ctx_log.debug(
+									"Config line %d: %s optional dependency `%s` %s package `%s`",
+									l.lineNo(), add ? "add" : "remove", optdep.c_str(), add ? "to" : "from", package.c_str()
+								);
 							}
 
 						} else if (l.key() == "addLibPath") {
@@ -457,8 +464,33 @@ int main(int argc, char* argv[]) {
 					ctx.log.warn("Config file references non-installed package '%s'.", pName.c_str());
 				}
 			}
+			for (auto& [pName, removeOptDepends] : ctx_removeOptDependsByPackageName) {
+				if (auto it = data.packagesByName.find(pName);  it != data.packagesByName.end()) {
+					Package* p = it->second;
+					for (auto& optdep : removeOptDepends) {
+						if (p->optDepends.erase(optdep.optDepName)) {
+							if (ctx.verbosity >= Verbosity_Debug) {
+								ctx.log.debug(
+									FILE_LINE "remove optional dependency `%s` to package `%s` from config file line %d.",
+									optdep.optDepName.cp(), pName.c_str(), optdep.configLineNo
+								);
+							}
+						} else {
+							if (ctx.verbosity >= Verbosity_WarnAndExec) {
+								ctx.log.warn(
+									FILE_LINE "skip optional dependency `%s` to package `%s` from config file line %d: already removed",
+									optdep.optDepName.cp(), pName.c_str(), optdep.configLineNo
+								);
+							}
+						}
+					}
+				} else if (ctx.verbosity >= Verbosity_WarnAndExec) {
+					ctx.log.warn("Config file references non-installed package '%s'.", pName.c_str());
+				}
+			}
 			ctx_addLibPathsByPackageName.clear();
 			ctx_addOptDependsByPackageName.clear();
+			ctx_removeOptDependsByPackageName.clear();
 
 			// ...Let's go on.
 			filesCollector.execute();

@@ -76,6 +76,8 @@ namespace dimgel {
 		alloc::String optDepName;
 	};
 
+	using RemoveOptDepend = AddOptDepend;
+
 	struct AddLibPath {
 		int configLineNo;
 		alloc::String path0;
