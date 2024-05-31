@@ -20,6 +20,7 @@
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/freebsd-**
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/sunos-**
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/linux-riscv64/**
+ignoreFiles=/usr/share/visualvm/visualvm/lib/deployed/jdk16/linux-aarch64/**
 
 
 # Syntax: addOptDepend={packageName} {optDependPackageName}
@@ -28,6 +29,8 @@ ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/linux-riscv64/**
 addOptDepend=abseil-cpp gtest
 addOptDepend=libreoffice-fresh coin-or-clp
 addOptDepend=qt6-speech libspeechd
+# Does not find libjawt.so, this line does NOT help:
+#addOptDepend=visualvm jdk-openjdk
 addOptDepend=wine lib32-gstreamer
 
 
@@ -47,14 +50,16 @@ removeOptDepend=ungoogled-chromium chromium-extension-web-store
 addLibPath=cuda /opt/cuda/targets/x86_64-linux/lib
 addLibPath=firefox /usr/lib/firefox
 #addLibPath=graphviz /usr/lib/R/lib
-addLibPath=jdk-openjdk /usr/lib/jvm/java-22-openjdk/lib/server
-#addLibPath=jre-openjdk /usr/lib/jvm/java-22-openjdk/lib/server
-addLibPath=libreoffice-fresh /usr/lib/jvm/java-22-openjdk/lib
-#addLibPath=libreoffice-still /usr/lib/jvm/java-22-openjdk/lib
+addLibPath=jdk-openjdk /usr/lib/jvm/default/lib/server
+#addLibPath=jre-openjdk /usr/lib/jvm/default/lib/server
+addLibPath=libreoffice-fresh /usr/lib/jvm/default/lib
+#addLibPath=libreoffice-still /usr/lib/jvm/default/lib
 addLibPath=librewolf /usr/lib/librewolf
 addLibPath=postgresql /usr/lib/perl5/5.38/core_perl/CORE
 addLibPath=qtcreator /usr/lib/qtcreator
 addLibPath=smbclient /usr/lib/samba
 addLibPath=thunderbird /usr/lib/thunderbird
+# Does not find libjawt.so otherwise (although I'm not sure is it correct to add this lib path, or visualvm REALLY does not find it):
+addLibPath=visualvm /usr/lib/jvm/default/lib
 addLibPath=wine /usr/lib/wine/x86_64-unix
 addLibPath=wine /usr/lib32/wine/i386-unix
