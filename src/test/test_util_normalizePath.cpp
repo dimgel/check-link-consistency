@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <assert.h>
 #include "../main/util/Error.h"
 #include "../main/util/util.h"

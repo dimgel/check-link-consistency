@@ -2,13 +2,21 @@ APP_NAME := check-link-consistency
 PREFIX=/usr
 DESTDIR=
 
+# Set non-empty for debug build.
+DEBUG=
+
 JOBS = $(shell nproc)
 MAKEFLAGS += " -j $(JOBS) -l $(JOBS)"
 # Don't print commands being executed, nor "Nothing to be done for ..." message.
 MAKEFLAGS += " -s"
 
 DISTRO := Arch
-CC := c++ -march=x86-64 -O2 -flto=auto -std=c++23 -fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
+
+# -fsanitize=address finds heap leaks at termination. TODO Fix? Or it's my MMArena I don't care about?
+# -fsanitize=thread  found nothing in few months.
+# -fno-sanitize=all  (kept it as reminder-placeholder for -fsanitize)
+CC := c++ -march=x86-64 -std=c++23 $(if $(DEBUG),-O0 -g -fno-sanitize=all,-O2 -flto=auto -s -DNDEBUG) \
+	-fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
 
 
 MAIN_CPPs := $(shell find src/main/ -type f -name '*.cpp')
@@ -66,6 +74,7 @@ $(TEST_PATH): $(TEST_Os)
 
 
 target/$(APP_NAME).conf.sample: src/etc/$(APP_NAME).conf.sample
+	mkdir -p target
 	cp $< $@
 
 

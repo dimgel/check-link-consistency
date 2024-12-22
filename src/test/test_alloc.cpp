@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <assert.h>
 #include "../main/util/alloc/Arena.h"
 #include "../main/util/alloc/String.h"

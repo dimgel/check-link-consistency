@@ -1,3 +1,5 @@
+#undef NDEBUG
+
 #include <assert.h>
 #include <iostream>
 #include "../main/util/StdCapture.h"

@@ -179,7 +179,6 @@ namespace dimgel {
 					// but more likely user pressed Ctrl+C. So, `break` instead of `continue`: don't download rest of optdeps.
 					throw Error(
 						FILE_LINE "exec(pacman -Sw) failed: %s"
-								"\n      Check IgnorePkg in /etc/pacman.conf."
 								"\n      Aborting: downloaded archives can be damaged.",
 						e.what()
 					);

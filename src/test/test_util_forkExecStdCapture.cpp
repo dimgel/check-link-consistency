@@ -1,5 +1,6 @@
+#undef NDEBUG
+
 #include <assert.h>
-#include <iostream>
 #include "../main/util/util.h"
 
 
