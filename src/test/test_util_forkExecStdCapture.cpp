@@ -24,13 +24,13 @@ void test_util_forkExecStdCapture() {
 		auto r = dimgel::util::forkExecStdCapture(argv, {.requireStatus0 = false, .captureStdOut = true, .captureStdErr = true});
 		assert(r.status == 1);
 		assert(r.stdOut == "");
-		assert(r.stdErr == "/usr/bin/cat: /../bcdy: No such file or directory\n");
+		assert(r.stdErr == "cat: /../bcdy: No such file or directory\n");
 	}
 	{
 		const char* argv[] = {"/usr/bin/cat", "/../bcdy", nullptr};
 		auto r = dimgel::util::forkExecStdCapture(argv, {.requireStatus0 = false, .captureStdOut = false, .captureStdErr = true});
 		assert(r.status == 1);
 		assert(r.stdOut == "");
-		assert(r.stdErr == "/usr/bin/cat: /../bcdy: No such file or directory\n");
+		assert(r.stdErr == "cat: /../bcdy: No such file or directory\n");
 	}
 }

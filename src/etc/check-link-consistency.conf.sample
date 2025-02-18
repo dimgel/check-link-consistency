@@ -17,17 +17,24 @@
 # Must be absolute path starting with '/'.
 # Wildcards are: '?' (any char except '/'), '*' (0+ any chars except '/'), "**" (0+ any chars).
 #
+ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/dragonflybsd-**
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/freebsd-**
-ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/sunos-**
 ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/linux-riscv64/**
+ignoreFiles=/usr/lib/dbeaver/plugins/com.sun.jna_*/com/sun/jna/sunos-**
 ignoreFiles=/usr/share/visualvm/visualvm/lib/deployed/jdk16/linux-aarch64/**
 
 
 # Syntax: addOptDepend={packageName} {optDependPackageName}
 # Here you can specify package optional dependencies maintainers forgot about.
 #
-addOptDepend=abseil-cpp gtest
+#addOptDepend=abseil-cpp gtest
+addOptDepend=libhandy glade
 addOptDepend=libreoffice-fresh coin-or-clp
+addOptDepend=kcoreaddons shiboken6
+addOptDepend=kguiaddons shiboken6
+addOptDepend=knotifications shiboken6
+addOptDepend=kwidgetsaddons shiboken6
+addOptDepend=kxmlgui shiboken6
 addOptDepend=qt6-speech libspeechd
 # Does not find libjawt.so, this line does NOT help:
 #addOptDepend=visualvm jdk-openjdk
