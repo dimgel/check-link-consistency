@@ -26,7 +26,7 @@ inline void* operator new(size_t size, dimgel::alloc::MemoryManager& mm) {
 	return mm.allocate(size, 0);
 }
 
-// Called if constructor throws exception.
+// Called automatically if constructor throws exception.
 inline void operator delete(void* p, dimgel::alloc::MemoryManager& mm) {
 	return mm.free(p, 0);
 }
