@@ -30,7 +30,6 @@ ignoreFiles=/usr/share/visualvm/visualvm/lib/deployed/jdk16/linux-arm-vfp-hflt/*
 # Syntax: addOptDepend={packageName} {optDependPackageName}
 # Here you can specify package optional dependencies maintainers forgot about.
 #
-#addOptDepend=abseil-cpp gtest
 addOptDepend=libhandy glade
 addOptDepend=libreoffice-fresh coin-or-clp
 addOptDepend=kcoreaddons shiboken6
@@ -41,16 +40,10 @@ addOptDepend=kxmlgui shiboken6
 addOptDepend=qt6-speech libspeechd
 # Does not find libjawt.so, this line does NOT help:
 #addOptDepend=visualvm jdk-openjdk
-addOptDepend=wine lib32-gstreamer
 
 
 # Syntax: removeOptDepend={packageName} {optDependPackageName}
 #
-# For galaxy/simplescreenrecorder 0.4.4-2: found dep only in AUR.
-removeOptDepend=simplescreenrecorder lib32-simplescreenrecorder
-# For omniverse/ungoogled-chromium 125.0.6422.41-1:
-# I found this "chromium-extension-web-store" only in AUR which check-link-consistency does not analyze.
-removeOptDepend=ungoogled-chromium chromium-extension-web-store
 
 
 # Syntax: addLibPath={package|/abs/file/path|/abs/directory/path/**} {/abs/directory/path}
@@ -67,11 +60,10 @@ addLibPath=jdk-openjdk /usr/lib/jvm/default/lib/server
 addLibPath=libreoffice-fresh /usr/lib/jvm/default/lib
 #addLibPath=libreoffice-still /usr/lib/jvm/default/lib
 addLibPath=librewolf /usr/lib/librewolf
-addLibPath=postgresql /usr/lib/perl5/5.40/core_perl/CORE
+addLibPath=postgresql /usr/lib/perl5/5.42/core_perl/CORE
 addLibPath=qtcreator /usr/lib/qtcreator
 addLibPath=smbclient /usr/lib/samba
 addLibPath=thunderbird /usr/lib/thunderbird
 # Does not find libjawt.so otherwise (although I'm not sure is it correct to add this lib path, or visualvm REALLY does not find it):
 addLibPath=visualvm /usr/lib/jvm/default/lib
 addLibPath=wine /usr/lib/wine/x86_64-unix
-addLibPath=wine /usr/lib32/wine/i386-unix
