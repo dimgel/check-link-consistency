@@ -40,6 +40,7 @@ addOptDepend=kxmlgui shiboken6
 addOptDepend=qt6-speech libspeechd
 # Does not find libjawt.so, this line does NOT help:
 #addOptDepend=visualvm jdk-openjdk
+addOptDepend=wine lib32-gstreamer
 
 
 # Syntax: removeOptDepend={packageName} {optDependPackageName}
@@ -67,3 +68,5 @@ addLibPath=thunderbird /usr/lib/thunderbird
 # Does not find libjawt.so otherwise (although I'm not sure is it correct to add this lib path, or visualvm REALLY does not find it):
 addLibPath=visualvm /usr/lib/jvm/default/lib
 addLibPath=wine /usr/lib/wine/x86_64-unix
+addLibPath=wine /usr/lib32/wine/i386-unix
+
