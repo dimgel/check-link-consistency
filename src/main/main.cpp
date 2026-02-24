@@ -79,9 +79,8 @@ int main(int argc, char* argv[]) {
 			}
 		} // while()
 		if (!ok || optind != argc) {
-			char* x = strrchr(argv[0], '/');
-			const char* argv0 = (x != nullptr) ? (x + 1) : argv[0];
-			fprintf(stderr, "Usage: %s [options]\n"
+			fputs("(c) Dmitry Grigoriev <dimgel@mail.ru>\n"
+					"Usage: check-link-consistency [options]\n"
 					"    -q  = Suppress INFO messages, output only errors\n"
 					"    -v  = Output warnings + exec() command lines + `pacman -Sw` output (useful to investigate)\n"
 					"    -vv = Huge (~50MB on my system) but grep-friendly debug output\n"
@@ -95,7 +94,7 @@ int main(int argc, char* argv[]) {
 					"     1  = not consistent :(\n"
 					"     2  = some bad error :(((\n"
 					"   139  = even worse, if you catch my meaning ;)\n",
-				argv0
+				  stderr
 			);
 			return ExitStatus_Error;
 		}
