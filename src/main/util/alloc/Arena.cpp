@@ -1,3 +1,4 @@
+#include <mutex>
 #include "../Log.h"
 #include "../util.h"
 #include "Arena.h"

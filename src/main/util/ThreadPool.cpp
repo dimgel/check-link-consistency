@@ -1,5 +1,6 @@
 #include <optional>
 #include <mutex>
+#include <unistd.h>
 #include "Abort.h"
 #include "ThreadPool.h"
 #include "util.h"
