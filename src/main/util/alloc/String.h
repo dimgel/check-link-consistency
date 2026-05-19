@@ -83,8 +83,9 @@ namespace std {
 
 
 namespace dimgel::alloc {
-	inline bool operator < (const String& a, const String& b) { return a.sv() < b.sv(); }
-	inline bool operator ==(const String& a, const String& b) { return a.sv() == b.sv(); }
+	inline bool operator < (const String& a, const String& b) { return a.sv() <   b.sv(); }
+	inline bool operator ==(const String& a, const String& b) { return a.sv() ==  b.sv(); }
+	inline std::strong_ordering operator <=>(const String& a, const String& b) { return a.sv() <=> b.sv(); }
 
 	inline bool operator ==(const String& a, const char* b) { return strcmp(a.cp(), b) == 0; }
 	inline bool operator ==(const char* b, const String& a) { return strcmp(a.cp(), b) == 0; }

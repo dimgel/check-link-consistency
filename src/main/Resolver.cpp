@@ -151,11 +151,17 @@ namespace dimgel {
 		constexpr StringRef titleF {"Problematic File"};
 		constexpr StringRef titleNL {"Unresolved Needed Libs"};
 		constexpr StringRef unassignedP {"(unassigned)"};
+		constexpr StringRef text32bit {"(32-bit)"};
+
+		struct NeededLib {
+			alloc::String name;
+			bool is32;
+		};
 
 		unsigned numUnassignedFiles = 0;
 		std::unordered_map<Package*, std::vector<File*>> packages;
 		std::vector<Package*> packagesSorted;
-		std::unordered_map<File*, std::vector<alloc::String>> neededLibsSorted;
+		std::unordered_map<File*, std::vector<NeededLib>> neededLibsSorted;
 		neededLibsSorted.reserve(data.uniqueFilesByPath1.size());
 		size_t lengthP  = std::max(titleP.length(), unassignedP.length());
 		size_t lengthF  = titleF.length();
@@ -173,10 +179,13 @@ namespace dimgel {
 
 			auto& nl = neededLibsSorted[f];
 			for (auto s : f->neededLibs) {
-				nl.push_back(s);
-				lengthNL = std::max(lengthNL, s.length());
+				nl.push_back({s, f->is32});
+				lengthNL = std::max(lengthNL, s.length() + (f->is32 ? 1 + text32bit.length() : 0));
 			}
-			util::sort(nl);
+			util::sort(nl, [](const NeededLib& a, const NeededLib& b) {
+				auto x = a.name <=> b.name;
+				return x < 0 || (x == 0 && b.is32);
+			});
 		}
 		packagesSorted.reserve(packages.size());
 		for (auto& [p, ff] : packages) {
@@ -185,7 +194,7 @@ namespace dimgel {
 				return a->path1 < b->path1;
 			});
 		}
-		util::sort(packagesSorted, [&](Package* a, Package* b) -> bool {
+		util::sort(packagesSorted, [&](const Package* a, const Package* b) -> bool {
 			if (a == nullptr) { return false; }
 			if (b == nullptr) { return true; }
 			return a->name < b->name;
@@ -235,7 +244,7 @@ namespace dimgel {
 						}
 
 						ctx.log.error(
-							"%s%*s%s   %s/%*s%s   %*s",
+							"%s%*s%s   %s/%*s%s   %s%s%s%s%s",
 
 							colorP ? c.white.cp() : "",
 							(int)(-lengthP),  p != nullptr ? pNameVer : unassignedP.cp(),
@@ -245,7 +254,11 @@ namespace dimgel {
 							(int)(-(lengthF - 1)),  f->path1.cp(),
 							colorF ? c.off.cp() : "",
 
-							(int)(-lengthNL),  nl.cp()
+							nl.name.cp(),
+							f->is32 ? " " : "",
+							f->is32 ? c.white.cp() : "",
+							f->is32 ? text32bit.cp() : "",
+							f->is32 ? c.off.cp() : ""
 						);
 						colorP = false;
 						colorF = false;
@@ -265,7 +278,12 @@ namespace dimgel {
 				for (File* f : packages[p]) {
 					ctx.log.error("    File: /%s", f->path1.cp());
 					for (auto& nl : neededLibsSorted[f]) {
-						ctx.log.error("        Lib: %s", nl.cp());
+						ctx.log.error(
+							"        Lib: %s%s%s",
+							nl.name.cp(),
+							f->is32 ? " " : "",
+							f->is32 ? text32bit.cp() : ""
+						);
 					}
 				}
 			}
