@@ -5,6 +5,7 @@ DESTDIR=
 # Set non-empty for debug build.
 DEBUG=
 
+
 JOBS = $(shell nproc)
 MAKEFLAGS += " -j $(JOBS) -l $(JOBS)"
 # Don't print commands being executed, nor "Nothing to be done for ..." message.
@@ -18,12 +19,14 @@ DISTRO := Arch
 CC := c++ -march=x86-64 -std=c++23 $(if $(DEBUG),-O0 -g -fno-sanitize=all,-O2 -flto=auto -s -DNDEBUG) \
 	-fno-rtti -Wall -Wextra -Wpedantic -Werror=format -Werror=return-type -Wl,-z,relro -Wl,-z,now -DDISTRO=$(DISTRO)
 
+# Keeping compatibility with existing AUR package: not target/debug & target/release, but target-debug & target.
+TARGET=target$(if $(DEBUG),-debug,)
 
 MAIN_CPPs := $(shell find src/main/ -type f -name '*.cpp')
-MAIN_Ds := $(MAIN_CPPs:src/%.cpp=target/build/main/%.d)
+MAIN_Ds := $(MAIN_CPPs:src/%.cpp=${TARGET}/build/main/%.d)
 MAIN_Os := $(MAIN_Ds:.d=.o)
 
-TEST_PATH := target/build/test/run
+TEST_PATH := ${TARGET}/build/test/run
 TEST_CPPs := $(shell find src/test/ -type f -name '*.cpp') \
 		src/main/util/alloc/alloc.cpp \
 		src/main/util/alloc/Arena.cpp \
@@ -32,7 +35,7 @@ TEST_CPPs := $(shell find src/test/ -type f -name '*.cpp') \
 		src/main/util/Log.cpp \
 		src/main/util/StdCapture.cpp \
 		src/main/util/util.cpp
-TEST_Ds := $(TEST_CPPs:src/%.cpp=target/build/test/%.d)
+TEST_Ds := $(TEST_CPPs:src/%.cpp=${TARGET}/build/test/%.d)
 TEST_Os := $(TEST_Ds:.d=.o)
 
 
@@ -40,18 +43,18 @@ TEST_Os := $(TEST_Ds:.d=.o)
 
 
 .PHONY: all
-all: target/$(APP_NAME) target/$(APP_NAME).conf.sample test
+all: ${TARGET}/$(APP_NAME) ${TARGET}/$(APP_NAME).conf.sample test
 
 
 # Delete built-in rules.
 %.o: %.cpp
 
-target/build/main/%.o: src/%.cpp target/build/main/%.d
+${TARGET}/build/main/%.o: src/%.cpp ${TARGET}/build/main/%.d
 	@echo 'CC $@'
 	@mkdir -p $(@D)
 	@$(CC) -c -MMD -MP -fPIC -o $@ $<
 
-target/build/test/%.o: src/%.cpp target/build/test/%.d
+${TARGET}/build/test/%.o: src/%.cpp ${TARGET}/build/test/%.d
 	@echo 'CC $@'
 	@mkdir -p $(@D)
 	@$(CC) -c -MMD -MP -fPIC -o $@ $<
@@ -64,7 +67,7 @@ $(TEST_Ds):
 -include $(TEST_Ds)
 
 
-target/$(APP_NAME): $(MAIN_Os)
+${TARGET}/$(APP_NAME): $(MAIN_Os)
 	@echo 'LL $@'
 	@$(CC) -s -lstdc++ -pthread -lelf -larchive -o $@ $^
 
@@ -73,8 +76,8 @@ $(TEST_PATH): $(TEST_Os)
 	@$(CC) -s -lstdc++ -pthread -o $@ $^
 
 
-target/$(APP_NAME).conf.sample: src/etc/$(APP_NAME).conf.sample
-	mkdir -p target
+${TARGET}/$(APP_NAME).conf.sample: src/etc/$(APP_NAME).conf.sample
+	mkdir -p ${TARGET}
 	cp $< $@
 
 
@@ -95,8 +98,8 @@ $(TEST_PATH).timestamp: $(TEST_PATH)
 
 .PHONY: install
 install:
-	install -Dm755 target/$(APP_NAME) -t $(DESTDIR)$(PREFIX)/bin/
-	install -Dm644 target/$(APP_NAME).conf.sample -t $(DESTDIR)$(PREFIX)/share/$(APP_NAME)
+	install -Dm755 ${TARGET}/$(APP_NAME) -t $(DESTDIR)$(PREFIX)/bin/
+	install -Dm644 ${TARGET}/$(APP_NAME).conf.sample -t $(DESTDIR)$(PREFIX)/share/$(APP_NAME)
 
 
 # ----------------------------------------------------------------------------------------------------------------------------------------
@@ -104,4 +107,4 @@ install:
 
 .PHONY: clean
 clean:
-	@rm -rf target
+	@rm -rf ${TARGET}
