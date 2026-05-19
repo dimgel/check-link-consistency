@@ -279,10 +279,9 @@ namespace dimgel {
 					ctx.log.error("    File: /%s", f->path1.cp());
 					for (auto& nl : neededLibsSorted[f]) {
 						ctx.log.error(
-							"        Lib: %s%s%s",
-							nl.name.cp(),
-							f->is32 ? " " : "",
-							f->is32 ? text32bit.cp() : ""
+							"        Lib%s: %s",
+							f->is32 ? "32" : "",
+							nl.name.cp()
 						);
 					}
 				}
