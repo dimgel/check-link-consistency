@@ -30,13 +30,15 @@ ignoreFiles=/usr/share/visualvm/visualvm/lib/deployed/jdk16/linux-arm-vfp-hflt/*
 # Syntax: addOptDepend={packageName} {optDependPackageName}
 # Here you can specify package optional dependencies maintainers forgot about.
 #
-addOptDepend=libhandy glade
-addOptDepend=libreoffice-fresh coin-or-clp
+addOptDepend=compiler-rt lib32-glibc
+addOptDepend=compiler-rt lib32-gcc-libs
 addOptDepend=kcoreaddons shiboken6
 addOptDepend=kguiaddons shiboken6
 addOptDepend=knotifications shiboken6
 addOptDepend=kwidgetsaddons shiboken6
 addOptDepend=kxmlgui shiboken6
+addOptDepend=libhandy glade
+addOptDepend=libreoffice-fresh coin-or-clp
 addOptDepend=qt6-speech libspeechd
 # Does not find libjawt.so, this line does NOT help:
 #addOptDepend=visualvm jdk-openjdk
