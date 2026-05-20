@@ -30,8 +30,8 @@ ignoreFiles=/usr/share/visualvm/visualvm/lib/deployed/jdk16/linux-arm-vfp-hflt/*
 # Syntax: addOptDepend={packageName} {optDependPackageName}
 # Here you can specify package optional dependencies maintainers forgot about.
 #
-addOptDepend=compiler-rt lib32-glibc
-addOptDepend=compiler-rt lib32-gcc-libs
+#addOptDepend=compiler-rt lib32-glibc
+#addOptDepend=compiler-rt lib32-gcc-libs
 addOptDepend=kcoreaddons shiboken6
 addOptDepend=kguiaddons shiboken6
 addOptDepend=knotifications shiboken6
